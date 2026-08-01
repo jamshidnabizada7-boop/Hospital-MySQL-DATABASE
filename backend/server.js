@@ -48,12 +48,17 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
-// ── Start ─────────────────────────────────────────────────────
-const PORT = parseInt(process.env.PORT || '5000');
-app.listen(PORT, () => {
-  console.log(`🏥  HMS API running at http://localhost:${PORT}`);
-  console.log(`📋  Frontend  :  http://localhost:${PORT}`);
-  console.log(`🔑  API base  :  http://localhost:${PORT}/api`);
-});
+// ── Start (local only — Vercel uses the export below) ────────
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = parseInt(process.env.PORT || '5000');
+  app.listen(PORT, () => {
+    console.log(`🏥  HMS API running at http://localhost:${PORT}`);
+    console.log(`📋  Frontend  :  http://localhost:${PORT}`);
+    console.log(`🔑  API base  :  http://localhost:${PORT}/api`);
+  });
+} else {
+  // Vercel: just log that the serverless function is ready
+  console.log('🏥  HMS serverless function ready');
+}
 
 module.exports = app;
