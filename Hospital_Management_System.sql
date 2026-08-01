@@ -264,7 +264,7 @@ CREATE TABLE Medical_Record (
     Record_ID       INT UNSIGNED   NOT NULL AUTO_INCREMENT,
     Appointment_ID  INT UNSIGNED   NOT NULL,
     Diagnosis       TEXT           NOT NULL,
-    Treatment       TEXT           NOT NULL DEFAULT '',
+    Treatment       TEXT           NOT NULL,
     Visit_Notes     TEXT               NULL,
     Follow_Up_Date  DATE               NULL,
     Created_At      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -667,7 +667,7 @@ ORDER BY b.Balance_Due DESC;
 -- View: Available_Doctors
 -- Doctors who have open slots today or in the future
 CREATE OR REPLACE VIEW Available_Doctors AS
-SELECT DISTINCT
+SELECT
     d.Doctor_ID,
     CONCAT(d.First_Name,' ',d.Last_Name)   AS Doctor_Name,
     s.Spec_Name,
@@ -684,7 +684,7 @@ WHERE d.Is_Active   = 1
   AND ds.Status     = 'Available'
   AND ds.Work_Date >= CURRENT_DATE
   AND sl.Status     = 'Open'
-GROUP BY d.Doctor_ID, ds.Work_Date
+GROUP BY d.Doctor_ID, s.Spec_Name, dept.Dept_Name, d.Consultation_Fee, ds.Work_Date
 ORDER BY ds.Work_Date, d.Last_Name;
 
 -- View: Medicine_Inventory
@@ -1118,13 +1118,9 @@ BEGIN
         VALUES(p_bill_id, p_amount, p_method, p_ref_no, p_emp_id);
         SET p_payment_id = LAST_INSERT_ID();
 
+        -- Update Amount_Paid; the AFTER INSERT trigger on Payment reconciles Balance_Due and Bill_Status
         UPDATE Bill
-        SET    Amount_Paid  = Amount_Paid + p_amount,
-               Balance_Due  = Balance_Due - p_amount,
-               Bill_Status  = CASE
-                                   WHEN (Balance_Due - p_amount) <= 0 THEN 'Paid'
-                                   ELSE 'Partial'
-                               END
+        SET    Amount_Paid = Amount_Paid + p_amount
         WHERE  Bill_ID = p_bill_id;
 
         SET p_message = 'Payment processed successfully';
@@ -1193,17 +1189,24 @@ BEGIN
 END$$
 
 -- Trigger: Update Bill status automatically after payment inserted
+-- NOTE: ProcessPayment SP also updates Bill; this trigger handles direct Payment inserts
+-- that bypass the SP (e.g. sample data inserts with FOREIGN_KEY_CHECKS=0 bypass)
 CREATE TRIGGER trg_update_bill_status_after_payment
 AFTER INSERT ON Payment
 FOR EACH ROW
 BEGIN
+    -- Only update if the Bill was NOT already updated by ProcessPayment SP
+    -- ProcessPayment SP uses a transaction and updates Bill inline,
+    -- so this trigger fires AFTER the SP's UPDATE, causing double-count.
+    -- We leave the trigger as a safety net but the SP is the primary path.
+    -- For direct inserts (sample data), this is needed.
     UPDATE Bill
-    SET    Amount_Paid = Amount_Paid + NEW.Amount,
-           Balance_Due = Total_Amount - (Amount_Paid + NEW.Amount),
-           Bill_Status = CASE
-                             WHEN (Total_Amount - (Amount_Paid + NEW.Amount)) <= 0 THEN 'Paid'
-                             ELSE 'Partial'
-                         END
+    SET    Balance_Due  = GREATEST(0, Total_Amount - Amount_Paid),
+           Bill_Status  = CASE
+                             WHEN GREATEST(0, Total_Amount - Amount_Paid) <= 0 THEN 'Paid'
+                             WHEN Amount_Paid > 0 THEN 'Partial'
+                             ELSE 'Pending'
+                          END
     WHERE  Bill_ID = NEW.Bill_ID;
 END$$
 

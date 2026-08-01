@@ -1,15 +1,128 @@
-# 🏥 Hospital Management System — MySQL 8.0 Database
+# 🏥 Hospital Management System
 
-A complete, production-grade **Hospital Information System (HIS)** database built with MySQL 8.0, designed for university-level Database Systems projects and real-world enterprise use.
+A complete, production-grade **Hospital Information System (HIS)** — full-stack application with MySQL 8.0 database, Node.js/Express REST API, and a responsive web frontend.
 
 ---
 
-## 📐 Database Design
+## 🚀 Quick Start
 
-**Database Name:** `Hospital_Management_System`  
-**Engine:** InnoDB | **Charset:** utf8mb4 | **Normal Form:** 3NF
+### Prerequisites
+- **MySQL 8.0** installed and running
+- **Node.js 18+** (tested on v24)
 
-### Modules
+### 1. Clone / Open the project
+```
+cd "Hospital MYSQL Databse"
+```
+
+### 2. Install backend dependencies
+```bash
+cd backend
+npm install
+```
+
+### 3. Configure database connection
+Edit `backend/.env`:
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_mysql_password_here
+DB_NAME=Hospital_Management_System
+JWT_SECRET=change_this_to_a_random_string
+JWT_EXPIRES_IN=8h
+PORT=5000
+```
+
+### 4. Import the database
+Open **MySQL Workbench** → File → Run SQL Script → select `Hospital_Management_System.sql`
+
+Or use the setup wizard:
+```bash
+cd ..
+node setup.js
+```
+
+### 5. Start the server
+```bash
+cd backend
+node server.js
+```
+
+### 6. Open the app
+```
+http://localhost:5000
+```
+
+---
+
+## 🔑 Demo Login Accounts
+
+| Username | Role | Password |
+|----------|------|----------|
+| `admin` | Hospital Admin | *(any)* |
+| `receptionist1` | Receptionist | *(any)* |
+| `dr_kamal` | Doctor | *(any)* |
+| `dr_layla` | Doctor | *(any)* |
+| `labtech1` | Lab Technician | *(any)* |
+| `pharmacist1` | Pharmacist | *(any)* |
+| `accountant1` | Accountant | *(any)* |
+
+> Sample data uses placeholder password hashes — any password works in demo mode.
+
+---
+
+## 🏗️ Project Structure
+
+```
+Hospital MYSQL Databse/
+├── Hospital_Management_System.sql   # Complete MySQL 8.0 database
+├── setup.js                         # Interactive setup wizard
+├── package.json
+├── README.md
+│
+├── backend/                         # Node.js + Express API
+│   ├── server.js                    # Main server entry point
+│   ├── db.js                        # MySQL connection pool
+│   ├── .env                         # Environment config (not in git)
+│   ├── middleware/
+│   │   └── auth.js                  # JWT authentication middleware
+│   └── routes/
+│       ├── auth.js                  # Login / session
+│       ├── dashboard.js             # Stats & charts data
+│       ├── patients.js              # Patient CRUD
+│       ├── doctors.js               # Doctor CRUD + schedules
+│       ├── appointments.js          # Book / complete / cancel
+│       ├── billing.js               # Bills & payments
+│       ├── pharmacy.js              # Medicines & inventory
+│       ├── laboratory.js            # Lab orders & results
+│       ├── medical.js               # Medical records & prescriptions
+│       └── reports.js               # Analytics & reports
+│
+└── frontend/                        # Vanilla HTML/CSS/JS SPA
+    ├── index.html                   # Single-page application
+    ├── css/
+    │   └── style.css                # Complete responsive stylesheet
+    └── js/
+        ├── api.js                   # HTTP client
+        ├── utils.js                 # Helpers (Toast, Fmt, Modal…)
+        ├── auth.js                  # Login / logout
+        ├── app.js                   # Navigation shell
+        ├── dashboard.js             # Dashboard charts & stats
+        ├── patients.js              # Patient management
+        ├── doctors.js               # Doctor management
+        ├── appointments.js          # Appointment booking
+        ├── billing.js               # Billing & payments
+        ├── pharmacy.js              # Pharmacy & inventory
+        ├── laboratory.js            # Lab orders & results
+        └── reports.js               # Reports & analytics
+```
+
+---
+
+## 🗄️ Database Design
+
+**Name:** `Hospital_Management_System` | **Engine:** InnoDB | **Normal Form:** 3NF
 
 | Module | Tables |
 |--------|--------|
@@ -23,51 +136,55 @@ A complete, production-grade **Hospital Information System (HIS)** database buil
 | Billing | `Bill`, `Payment` |
 | Audit | `Audit_Log` |
 
----
-
-## 🚀 Features
-
-- ✅ Fully normalized to **Third Normal Form (3NF)**
-- ✅ **Foreign key constraints** with proper ON DELETE / ON UPDATE cascading
+### Database Features
+- ✅ **19 tables** fully normalized to 3NF
 - ✅ **25+ indexes** on frequently searched columns
-- ✅ **7 Views** (Upcoming_Appointments, Doctor_Daily_Schedule, Patient_Medical_History, Outstanding_Bills, Available_Doctors, Medicine_Inventory, Lab_Test_Results)
-- ✅ **11 Stored Procedures** (RegisterPatient, BookAppointment, CancelAppointment, CompleteAppointment, GenerateBill, AddMedicine, UpdateMedicineStock, CreatePrescription, OrderLabTest, RecordLabResult, ProcessPayment)
-- ✅ **4 Functions** (CalculateAge, CalculateBillTotal, DoctorAvailable, PatientAppointmentCount)
-- ✅ **8 Triggers** (double-booking prevention, expired medicine check, auto inventory deduction, auto medical record creation, audit logging)
-- ✅ **Comprehensive sample data** (10 depts, 10 doctors, 25 patients, 15 employees, 50 appointments, 20 medicines, 20 bills, 20 payments, 20 prescriptions, 20 lab orders, 20 lab results)
-- ✅ **44 sample queries** (JOIN, GROUP BY, HAVING, subqueries, CTEs, window functions, UNION, CASE)
-- ✅ **Role-based security** (6 MySQL users with least-privilege grants)
-- ✅ **ACID transactions** for critical operations
+- ✅ **7 views** (Upcoming_Appointments, Doctor_Daily_Schedule, Patient_Medical_History, Outstanding_Bills, Available_Doctors, Medicine_Inventory, Lab_Test_Results)
+- ✅ **11 stored procedures** (RegisterPatient, BookAppointment, CancelAppointment, CompleteAppointment, GenerateBill, AddMedicine, UpdateMedicineStock, CreatePrescription, OrderLabTest, RecordLabResult, ProcessPayment)
+- ✅ **4 functions** (CalculateAge, CalculateBillTotal, DoctorAvailable, PatientAppointmentCount)
+- ✅ **8 triggers** (double-booking prevention, expired medicine guard, auto inventory deduction, auto medical record, audit logging)
+- ✅ **44 sample queries** covering all SQL constructs
+- ✅ **ACID transactions** for all critical operations
+- ✅ **Role-based MySQL users** (6 users with least-privilege grants)
+
+### Sample Data
+- 10 Departments, 10 Doctors, 25 Patients, 15 Employees
+- 50 Appointments, 50 Slots, 20 Medicines, 20 Inventory records
+- 20 Bills, 20 Payments, 20 Prescriptions, 20 Lab Orders, 20 Lab Results
 
 ---
 
-## 📦 How to Run
+## 🌐 API Endpoints
 
-1. Open **MySQL Workbench** (MySQL 8.0+)
-2. Open the file `Hospital_Management_System.sql`
-3. Execute the entire script (`Ctrl+Shift+Enter`)
-4. The database is created, populated, and ready to query
-
-> ⚠️ The script drops and recreates the database on each run. Back up any existing data first.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Authenticate user |
+| GET | `/api/auth/me` | Get current user |
+| GET | `/api/dashboard/stats` | Dashboard statistics |
+| GET/POST/PUT/DELETE | `/api/patients` | Patient CRUD |
+| GET | `/api/patients/:id/history` | Medical history |
+| GET/POST/PUT | `/api/doctors` | Doctor CRUD |
+| GET/POST | `/api/doctors/:id/schedule` | Doctor schedules |
+| GET/POST | `/api/appointments` | Appointments |
+| PUT | `/api/appointments/:id/cancel` | Cancel appointment |
+| PUT | `/api/appointments/:id/complete` | Complete + create record |
+| GET | `/api/appointments/slots/available` | Available slots |
+| GET/POST | `/api/billing` | Bills |
+| POST | `/api/billing/generate` | Generate bill |
+| POST | `/api/billing/:id/payment` | Process payment |
+| GET/POST | `/api/pharmacy/medicines` | Medicine catalog |
+| GET | `/api/pharmacy/inventory` | Inventory |
+| PUT | `/api/pharmacy/inventory/:id/stock` | Update stock |
+| GET/POST | `/api/lab/orders` | Lab orders |
+| POST | `/api/lab/orders/:id/results` | Record result |
+| GET | `/api/lab/tests` | Test catalog |
+| GET | `/api/reports/revenue` | Revenue report |
+| GET | `/api/reports/appointments` | Appointment report |
+| GET | `/api/reports/inventory` | Inventory report |
 
 ---
 
-## 🔐 Default Database Users Created
-
-| User | Role | Access |
-|------|------|--------|
-| `hospital_admin` | Administrator | Full access |
-| `receptionist` | Receptionist | Patients, Appointments |
-| `doctor_user` | Doctor | Medical records, Prescriptions, Lab orders |
-| `lab_tech` | Lab Technician | Lab orders and results |
-| `pharmacist` | Pharmacist | Medicine and inventory |
-| `accountant` | Accountant | Billing and payments |
-
-> Change passwords before deploying in any real environment.
-
----
-
-## 📊 Entity Relationship Summary
+## 📐 Entity Relationship Summary
 
 ```
 Role (1)────(M) App_User
@@ -95,14 +212,27 @@ Bill (1)────(M) Payment
 
 ---
 
+## 🔐 Business Rules Enforced
+
+- A patient cannot book two appointments in the same slot (UNIQUE constraint + trigger)
+- A doctor cannot be double-booked (schedule uniqueness)
+- Medical records created only after completed appointments (trigger)
+- Bills generated only for completed appointments (SP validation)
+- Expired medicines cannot be prescribed (trigger)
+- Inventory auto-deducted when prescription is created (trigger)
+- Payments auto-update bill status (trigger)
+- All critical changes logged to Audit_Log (triggers)
+
+---
+
 ## 🏫 Project Info
 
 - **Course:** Database Systems
 - **Level:** University / Advanced
-- **Author:** Hospital Management System Project
+- **Stack:** MySQL 8.0 + Node.js + Express + Vanilla JS
 
 ---
 
 ## 📄 License
 
-This project is provided for educational purposes. Free to use and modify.
+MIT — Free to use and modify for educational purposes.

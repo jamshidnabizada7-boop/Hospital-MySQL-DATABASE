@@ -1,0 +1,13 @@
+{
+  "name": "hospital-management-system",
+  "version": "1.0.0",
+  "description": "Full-stack Hospital Management System — MySQL 8.0 + Node.js + Express",
+  "scripts": {
+    "setup": "node setup.js",
+    "start": "cd backend && node server.js",
+    "dev":   "cd backend && node --watch server.js"
+  },
+  "keywords": ["hospital", "mysql", "nodejs", "express", "hms"],
+  "author": "HMS Project",
+  "license": "MIT"
+}
