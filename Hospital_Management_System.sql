@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 -- Hospital Management System - Complete MySQL 8.0 Database
 -- Author  : Senior Database Architect
 -- Version : 1.0.0
@@ -14,8 +14,7 @@ SET SQL_MODE = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVIS
 DROP DATABASE IF EXISTS Hospital_Management_System;
 CREATE DATABASE Hospital_Management_System
     CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci
-    COMMENT 'Hospital Management System - Enterprise Grade HIS';
+    COLLATE utf8mb4_unicode_ci;
 
 USE Hospital_Management_System;
 
@@ -935,12 +934,19 @@ BEGIN
         SET p_record_id = 0;
         ROLLBACK;
     ELSE
+        -- Update status; trg_auto_medical_record_on_complete trigger auto-creates the record
         UPDATE Appointment SET Appointment_Status = 'Completed' WHERE Appointment_ID = p_appt_id;
         UPDATE Appointment_Slot SET Status = 'Completed' WHERE Slot_ID = v_slot;
 
-        INSERT INTO Medical_Record(Appointment_ID, Diagnosis, Treatment, Visit_Notes)
-        VALUES(p_appt_id, p_diagnosis, p_treatment, p_notes);
-        SET p_record_id = LAST_INSERT_ID();
+        -- Populate the auto-created Medical_Record with actual clinical data
+        UPDATE Medical_Record
+        SET    Diagnosis   = p_diagnosis,
+               Treatment   = COALESCE(p_treatment, ''),
+               Visit_Notes = p_notes
+        WHERE  Appointment_ID = p_appt_id;
+
+        SELECT Record_ID INTO p_record_id
+        FROM   Medical_Record WHERE Appointment_ID = p_appt_id;
 
         SET p_message = 'Appointment completed and medical record created';
         COMMIT;
@@ -1099,10 +1105,11 @@ CREATE PROCEDURE ProcessPayment(
 )
 BEGIN
     DECLARE v_balance DECIMAL(10,2);
+    DECLARE v_status  VARCHAR(20);
 
     START TRANSACTION;
 
-    SELECT Balance_Due INTO v_balance
+    SELECT Balance_Due, Bill_Status INTO v_balance, v_status
     FROM   Bill WHERE Bill_ID = p_bill_id FOR UPDATE;
 
     IF v_balance IS NULL THEN
@@ -1113,138 +1120,18 @@ BEGIN
         SET p_message = 'Payment amount must be positive';
         SET p_payment_id = 0;
         ROLLBACK;
+    ELSEIF v_status IN ('Paid','Cancelled','Waived') THEN
+        SET p_message = CONCAT('Bill is already ', v_status);
+        SET p_payment_id = 0;
+        ROLLBACK;
     ELSE
+        -- Insert payment only; trigger recalculates Amount_Paid/Balance_Due/Status
         INSERT INTO Payment(Bill_ID, Amount, Payment_Method, Reference_No, Received_By)
         VALUES(p_bill_id, p_amount, p_method, p_ref_no, p_emp_id);
         SET p_payment_id = LAST_INSERT_ID();
-
-        -- Update Amount_Paid; the AFTER INSERT trigger on Payment reconciles Balance_Due and Bill_Status
-        UPDATE Bill
-        SET    Amount_Paid = Amount_Paid + p_amount
-        WHERE  Bill_ID = p_bill_id;
-
         SET p_message = 'Payment processed successfully';
         COMMIT;
     END IF;
-END$$
-
-DELIMITER ;
-
-
--- ============================================================
--- SECTION 15: TRIGGERS
--- ============================================================
-DELIMITER $$
-
--- Trigger: Prevent double booking (before insert on Appointment)
-CREATE TRIGGER trg_prevent_double_booking
-BEFORE INSERT ON Appointment
-FOR EACH ROW
-BEGIN
-    DECLARE v_slot_status VARCHAR(20);
-    SELECT Status INTO v_slot_status
-    FROM   Appointment_Slot WHERE Slot_ID = NEW.Slot_ID;
-    IF v_slot_status != 'Open' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'This slot is already booked or not available.';
-    END IF;
-END$$
-
--- Trigger: Auto-mark slot as Booked after appointment inserted
-CREATE TRIGGER trg_slot_booked_after_appointment
-AFTER INSERT ON Appointment
-FOR EACH ROW
-BEGIN
-    UPDATE Appointment_Slot SET Status = 'Booked' WHERE Slot_ID = NEW.Slot_ID;
-END$$
-
--- Trigger: Prevent expired medicine from being prescribed
-CREATE TRIGGER trg_prevent_expired_medicine
-BEFORE INSERT ON Prescription_Item
-FOR EACH ROW
-BEGIN
-    DECLARE v_expiry DATE;
-    SELECT MIN(Expiry_Date) INTO v_expiry
-    FROM   Inventory
-    WHERE  Medicine_ID = NEW.Medicine_ID
-      AND  Quantity_In_Stock > 0;
-    IF v_expiry IS NULL OR v_expiry < CURRENT_DATE THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Medicine is expired or out of stock and cannot be prescribed.';
-    END IF;
-END$$
-
--- Trigger: Automatically deduct inventory after prescription item is created
-CREATE TRIGGER trg_deduct_inventory_on_prescription
-AFTER INSERT ON Prescription_Item
-FOR EACH ROW
-BEGIN
-    UPDATE Inventory
-    SET    Quantity_In_Stock = GREATEST(0, Quantity_In_Stock - 1)
-    WHERE  Medicine_ID = NEW.Medicine_ID
-      AND  Expiry_Date >= CURRENT_DATE
-      AND  Quantity_In_Stock > 0
-    ORDER  BY Expiry_Date ASC
-    LIMIT  1;
-END$$
-
--- Trigger: Update Bill status automatically after payment inserted
--- NOTE: ProcessPayment SP also updates Bill; this trigger handles direct Payment inserts
--- that bypass the SP (e.g. sample data inserts with FOREIGN_KEY_CHECKS=0 bypass)
-CREATE TRIGGER trg_update_bill_status_after_payment
-AFTER INSERT ON Payment
-FOR EACH ROW
-BEGIN
-    -- Only update if the Bill was NOT already updated by ProcessPayment SP
-    -- ProcessPayment SP uses a transaction and updates Bill inline,
-    -- so this trigger fires AFTER the SP's UPDATE, causing double-count.
-    -- We leave the trigger as a safety net but the SP is the primary path.
-    -- For direct inserts (sample data), this is needed.
-    UPDATE Bill
-    SET    Balance_Due  = GREATEST(0, Total_Amount - Amount_Paid),
-           Bill_Status  = CASE
-                             WHEN GREATEST(0, Total_Amount - Amount_Paid) <= 0 THEN 'Paid'
-                             WHEN Amount_Paid > 0 THEN 'Partial'
-                             ELSE 'Pending'
-                          END
-    WHERE  Bill_ID = NEW.Bill_ID;
-END$$
-
--- Trigger: Auto-create Medical_Record when appointment is completed via direct UPDATE
-CREATE TRIGGER trg_auto_medical_record_on_complete
-AFTER UPDATE ON Appointment
-FOR EACH ROW
-BEGIN
-    IF NEW.Appointment_Status = 'Completed' AND OLD.Appointment_Status != 'Completed' THEN
-        IF NOT EXISTS (SELECT 1 FROM Medical_Record WHERE Appointment_ID = NEW.Appointment_ID) THEN
-            INSERT INTO Medical_Record(Appointment_ID, Diagnosis, Treatment)
-            VALUES(NEW.Appointment_ID, 'Pending physician notes', '');
-        END IF;
-    END IF;
-END$$
-
--- Trigger: Audit log for Doctor updates
-CREATE TRIGGER trg_audit_doctor_update
-AFTER UPDATE ON Doctor
-FOR EACH ROW
-BEGIN
-    INSERT INTO Audit_Log(Table_Name, Record_ID, Action, Old_Values, New_Values)
-    VALUES('Doctor', OLD.Doctor_ID, 'UPDATE',
-           JSON_OBJECT('First_Name', OLD.First_Name, 'Last_Name', OLD.Last_Name,
-                       'Consultation_Fee', OLD.Consultation_Fee, 'Is_Active', OLD.Is_Active),
-           JSON_OBJECT('First_Name', NEW.First_Name, 'Last_Name', NEW.Last_Name,
-                       'Consultation_Fee', NEW.Consultation_Fee, 'Is_Active', NEW.Is_Active));
-END$$
-
--- Trigger: Audit log for Bill updates
-CREATE TRIGGER trg_audit_bill_update
-AFTER UPDATE ON Bill
-FOR EACH ROW
-BEGIN
-    INSERT INTO Audit_Log(Table_Name, Record_ID, Action, Old_Values, New_Values)
-    VALUES('Bill', OLD.Bill_ID, 'UPDATE',
-           JSON_OBJECT('Bill_Status', OLD.Bill_Status, 'Amount_Paid', OLD.Amount_Paid, 'Balance_Due', OLD.Balance_Due),
-           JSON_OBJECT('Bill_Status', NEW.Bill_Status, 'Amount_Paid', NEW.Amount_Paid, 'Balance_Due', NEW.Balance_Due));
 END$$
 
 DELIMITER ;
@@ -1782,6 +1669,142 @@ INSERT INTO Payment(Bill_ID, Payment_Date, Amount, Payment_Method, Reference_No,
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- Sync Appointment_Slot status to reflect actual bookings (sample data bypass fix)
+-- Runs twice to handle any edge-case ordering in multi-statement imports
+UPDATE Appointment_Slot sl
+JOIN Appointment a ON a.Slot_ID = sl.Slot_ID
+SET sl.Status = CASE
+    WHEN a.Appointment_Status = 'Completed'              THEN 'Completed'
+    WHEN a.Appointment_Status = 'Scheduled'              THEN 'Booked'
+    WHEN a.Appointment_Status IN ('Cancelled','No_Show') THEN 'Open'
+    ELSE 'Booked'
+END;
+
+-- Second pass: catch any stragglers (idempotent)
+UPDATE Appointment_Slot sl
+JOIN Appointment a ON a.Slot_ID = sl.Slot_ID
+SET sl.Status = CASE
+    WHEN a.Appointment_Status = 'Completed'              THEN 'Completed'
+    WHEN a.Appointment_Status = 'Scheduled'              THEN 'Booked'
+    WHEN a.Appointment_Status IN ('Cancelled','No_Show') THEN 'Open'
+    ELSE 'Booked'
+END;
+
+
+-- ============================================================
+-- SECTION 15: TRIGGERS
+-- ============================================================
+DELIMITER $$
+
+-- Trigger: Prevent double booking (before insert on Appointment)
+CREATE TRIGGER trg_prevent_double_booking
+BEFORE INSERT ON Appointment
+FOR EACH ROW
+BEGIN
+    DECLARE v_slot_status VARCHAR(20);
+    SELECT Status INTO v_slot_status
+    FROM   Appointment_Slot WHERE Slot_ID = NEW.Slot_ID;
+    IF v_slot_status != 'Open' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'This slot is already booked or not available.';
+    END IF;
+END$$
+
+-- Trigger: Auto-mark slot as Booked after appointment inserted
+CREATE TRIGGER trg_slot_booked_after_appointment
+AFTER INSERT ON Appointment
+FOR EACH ROW
+BEGIN
+    UPDATE Appointment_Slot SET Status = 'Booked' WHERE Slot_ID = NEW.Slot_ID;
+END$$
+
+-- Trigger: Prevent expired medicine from being prescribed
+CREATE TRIGGER trg_prevent_expired_medicine
+BEFORE INSERT ON Prescription_Item
+FOR EACH ROW
+BEGIN
+    DECLARE v_expiry DATE;
+    SELECT MIN(Expiry_Date) INTO v_expiry
+    FROM   Inventory
+    WHERE  Medicine_ID = NEW.Medicine_ID
+      AND  Quantity_In_Stock > 0;
+    IF v_expiry IS NULL OR v_expiry < CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Medicine is expired or out of stock and cannot be prescribed.';
+    END IF;
+END$$
+
+-- Trigger: Automatically deduct inventory after prescription item is created
+CREATE TRIGGER trg_deduct_inventory_on_prescription
+AFTER INSERT ON Prescription_Item
+FOR EACH ROW
+BEGIN
+    UPDATE Inventory
+    SET    Quantity_In_Stock = GREATEST(0, Quantity_In_Stock - 1)
+    WHERE  Medicine_ID = NEW.Medicine_ID
+      AND  Expiry_Date >= CURRENT_DATE
+      AND  Quantity_In_Stock > 0
+    ORDER  BY Expiry_Date ASC
+    LIMIT  1;
+END$$
+
+-- Trigger: Recalculate Bill totals after each payment (sum-based, accurate)
+CREATE TRIGGER trg_update_bill_status_after_payment
+AFTER INSERT ON Payment
+FOR EACH ROW
+BEGIN
+    DECLARE v_total_paid DECIMAL(10,2);
+    SELECT SUM(Amount) INTO v_total_paid FROM Payment WHERE Bill_ID = NEW.Bill_ID;
+    UPDATE Bill
+    SET    Amount_Paid = v_total_paid,
+           Balance_Due = GREATEST(0.00, Total_Amount - v_total_paid),
+           Bill_Status = CASE
+               WHEN GREATEST(0.00, Total_Amount - v_total_paid) <= 0 THEN 'Paid'
+               WHEN v_total_paid > 0 THEN 'Partial'
+               ELSE 'Pending'
+           END
+    WHERE  Bill_ID = NEW.Bill_ID;
+END$$
+
+-- Trigger: Auto-create Medical_Record when appointment is completed via direct UPDATE
+CREATE TRIGGER trg_auto_medical_record_on_complete
+AFTER UPDATE ON Appointment
+FOR EACH ROW
+BEGIN
+    IF NEW.Appointment_Status = 'Completed' AND OLD.Appointment_Status != 'Completed' THEN
+        IF NOT EXISTS (SELECT 1 FROM Medical_Record WHERE Appointment_ID = NEW.Appointment_ID) THEN
+            INSERT INTO Medical_Record(Appointment_ID, Diagnosis, Treatment)
+            VALUES(NEW.Appointment_ID, 'Pending physician notes', '');
+        END IF;
+    END IF;
+END$$
+
+-- Trigger: Audit log for Doctor updates
+CREATE TRIGGER trg_audit_doctor_update
+AFTER UPDATE ON Doctor
+FOR EACH ROW
+BEGIN
+    INSERT INTO Audit_Log(Table_Name, Record_ID, Action, Old_Values, New_Values)
+    VALUES('Doctor', OLD.Doctor_ID, 'UPDATE',
+           JSON_OBJECT('First_Name', OLD.First_Name, 'Last_Name', OLD.Last_Name,
+                       'Consultation_Fee', OLD.Consultation_Fee, 'Is_Active', OLD.Is_Active),
+           JSON_OBJECT('First_Name', NEW.First_Name, 'Last_Name', NEW.Last_Name,
+                       'Consultation_Fee', NEW.Consultation_Fee, 'Is_Active', NEW.Is_Active));
+END$$
+
+-- Trigger: Audit log for Bill updates
+CREATE TRIGGER trg_audit_bill_update
+AFTER UPDATE ON Bill
+FOR EACH ROW
+BEGIN
+    INSERT INTO Audit_Log(Table_Name, Record_ID, Action, Old_Values, New_Values)
+    VALUES('Bill', OLD.Bill_ID, 'UPDATE',
+           JSON_OBJECT('Bill_Status', OLD.Bill_Status, 'Amount_Paid', OLD.Amount_Paid, 'Balance_Due', OLD.Balance_Due),
+           JSON_OBJECT('Bill_Status', NEW.Bill_Status, 'Amount_Paid', NEW.Amount_Paid, 'Balance_Due', NEW.Balance_Due));
+END$$
+
+DELIMITER ;
+
 
 -- ============================================================
 -- SECTION 17: SAMPLE QUERIES (40+)
@@ -2170,7 +2193,7 @@ WHERE lt.Test_Code = 'HBA1C';
 
 -- Q37: Inventory valuation per pharmacy
 SELECT ph.Pharmacy_Name,
-       COUNT(i.Inventory_ID)                 AS Medicine_Lines,
+       COUNT(i.Inventory_ID)                 AS Item_Lines,
        SUM(i.Quantity_In_Stock * i.Unit_Cost) AS Stock_Value
 FROM Inventory i JOIN Pharmacy ph ON i.Pharmacy_ID = ph.Pharmacy_ID
 GROUP BY ph.Pharmacy_ID ORDER BY Stock_Value DESC;
@@ -2309,23 +2332,36 @@ FLUSH PRIVILEGES;
 -- SECTION 19: TRANSACTIONS
 -- ============================================================
 
+-- Create a demo schedule + slots for transaction examples
+-- (avoids conflicts with existing sample data)
+INSERT INTO Doctor_Schedule(Doctor_ID, Work_Date, Start_Time, End_Time, Status)
+VALUES(1, '2026-10-01', '09:00:00', '11:00:00', 'Available');
+SET @demo_sched = LAST_INSERT_ID();
+
+INSERT INTO Appointment_Slot(Schedule_ID, Slot_Start, Slot_End) VALUES
+  (@demo_sched, '09:00:00', '09:30:00'),
+  (@demo_sched, '09:30:00', '10:00:00'),
+  (@demo_sched, '10:00:00', '10:30:00');
+SET @demo_slot1 = LAST_INSERT_ID() - 2;
+SET @demo_slot2 = LAST_INSERT_ID() - 1;
+SET @demo_slot3 = LAST_INSERT_ID();
+
 -- Transaction 1: Book an appointment safely
 START TRANSACTION;
-UPDATE Appointment_Slot SET Status = 'Open' WHERE Slot_ID = 5; -- reset for demo
-CALL BookAppointment(5, 5, 'Demo booking via transaction', @appt_id, @msg);
+CALL BookAppointment(1, @demo_slot1, 'Demo booking via transaction', @appt_id, @msg);
 SELECT @appt_id AS New_Appointment_ID, @msg AS Message;
 COMMIT;
 
 -- Transaction 2: Complete appointment + generate bill atomically
 START TRANSACTION;
-CALL CompleteAppointment(22, 'Stable cardiac rhythm', 'Aspirin 75mg OD continued', 'Annual check normal', @rec_id, @cmsg);
-CALL GenerateBill(22, 180.00, 500.00, 50.00, 0.00, 73.00, @bill_id, @bmsg);
+CALL CompleteAppointment(@appt_id, 'Stable cardiac rhythm', 'Aspirin 75mg OD continued', 'Annual check normal', @rec_id, @cmsg);
+CALL GenerateBill(@appt_id, 180.00, 500.00, 50.00, 0.00, 73.00, @bill_id, @bmsg);
 SELECT @rec_id AS Medical_Record_ID, @cmsg AS Complete_Msg, @bill_id AS Bill_ID, @bmsg AS Bill_Msg;
 COMMIT;
 
--- Transaction 3: Process payment with rollback on error
+-- Transaction 3: Process payment
 START TRANSACTION;
-CALL ProcessPayment(5, 1352.00, 'Insurance', 'INS-DEMO-001', 4, @pay_id, @pmsg);
+CALL ProcessPayment(@bill_id, 2303.00, 'Insurance', 'INS-DEMO-001', 4, @pay_id, @pmsg);
 SELECT @pay_id AS Payment_ID, @pmsg AS Payment_Msg;
 COMMIT;
 
@@ -2338,9 +2374,19 @@ SELECT @smsg1 AS Stock1, @smsg2 AS Stock2, @smsg3 AS Stock3;
 COMMIT;
 
 -- ============================================================
--- SECTION 20: RE-ENABLE CHECKS
+-- SECTION 20: RE-ENABLE CHECKS & FINAL SYNC
 -- ============================================================
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- Final slot status sync (handles demo transaction slots)
+UPDATE Appointment_Slot sl
+JOIN Appointment a ON a.Slot_ID = sl.Slot_ID
+SET sl.Status = CASE
+    WHEN a.Appointment_Status = 'Completed'              THEN 'Completed'
+    WHEN a.Appointment_Status = 'Scheduled'              THEN 'Booked'
+    WHEN a.Appointment_Status IN ('Cancelled','No_Show') THEN 'Open'
+    ELSE 'Booked'
+END;
 
 -- ============================================================
 -- END OF Hospital_Management_System.sql

@@ -92,7 +92,7 @@ router.get('/inventory', authenticate, async (req, res) => {
     const [lowStock] = await db.query(`
       SELECT m.Medicine_Name, m.Strength, ph.Pharmacy_Name,
              i.Quantity_In_Stock, i.Reorder_Level,
-             (i.Reorder_Level - i.Quantity_In_Stock) AS deficit
+             CAST((i.Reorder_Level - i.Quantity_In_Stock) AS SIGNED) AS deficit
       FROM Inventory i
       JOIN Medicine  m  ON i.Medicine_ID=m.Medicine_ID
       JOIN Pharmacy  ph ON i.Pharmacy_ID=ph.Pharmacy_ID
@@ -111,13 +111,14 @@ router.get('/inventory', authenticate, async (req, res) => {
 
     const [valuation] = await db.query(`
       SELECT ph.Pharmacy_Name,
-             COUNT(i.Inventory_ID) AS lines,
-             SUM(i.Quantity_In_Stock * i.Unit_Cost) AS stock_value
+             COUNT(i.Inventory_ID) AS item_lines,
+             COALESCE(SUM(i.Quantity_In_Stock * i.Unit_Cost), 0) AS stock_value
       FROM Inventory i JOIN Pharmacy ph ON i.Pharmacy_ID=ph.Pharmacy_ID
-      GROUP BY ph.Pharmacy_ID`);
+      GROUP BY ph.Pharmacy_ID ORDER BY ph.Pharmacy_Name`);
 
     res.json({ success: true, low_stock: lowStock, expiring, valuation });
   } catch (err) {
+    console.error('Inventory report error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
