@@ -245,8 +245,11 @@
   <div class="tabs-container" data-tabs>
     <div class="tabs">
       <button class="tab-btn active" data-tab="tab-medicines">💊 Medicines</button>
-      <button class="tab-btn" data-tab="tab-inventory">📦 Inventory</button>
+      <button class="tab-btn"        data-tab="tab-inventory">📦 Inventory</button>
+      <button class="tab-btn"        data-tab="tab-locations">🏪 Pharmacies</button>
     </div>
+
+    <!-- Medicines tab -->
     <div id="tab-medicines" class="tab-panel active">
       <div class="card">
         <div class="card-header">
@@ -254,17 +257,20 @@
           <div style="display:flex;gap:10px">
             <input class="form-control" id="medicines-search" placeholder="🔍 Search…" style="width:200px"
                    oninput="Pharmacy.search=this.value;Pharmacy.loadMedicines(1)">
+            <button class="btn btn-primary" onclick="Pharmacy.openAddMedicine()">+ Add Medicine</button>
           </div>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Medicine</th><th>Category</th><th>Form</th><th>Strength</th><th>Manufacturer</th><th>Unit Price</th><th>Stock</th><th>Rx</th></tr></thead>
-            <tbody id="medicines-table"><tr><td colspan="8" class="table-empty"><div class="spinner"></div></td></tr></tbody>
+            <thead><tr><th>Medicine</th><th>Category</th><th>Form</th><th>Strength</th><th>Manufacturer</th><th>Price</th><th>Stock</th><th>Rx</th><th>Actions</th></tr></thead>
+            <tbody id="medicines-table"><tr><td colspan="9" class="table-empty"><div class="spinner"></div></td></tr></tbody>
           </table>
         </div>
         <div id="medicines-pagination" class="pagination"></div>
       </div>
     </div>
+
+    <!-- Inventory tab -->
     <div id="tab-inventory" class="tab-panel">
       <div class="card">
         <div class="card-header">
@@ -277,6 +283,7 @@
               <option value="expiring">Expiring Soon</option>
               <option value="expired">Expired</option>
             </select>
+            <button class="btn btn-primary" onclick="Pharmacy.openAddInventory()">+ Add Inventory</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -288,6 +295,19 @@
         <div id="inv-pagination" class="pagination"></div>
       </div>
     </div>
+
+    <!-- Pharmacy locations tab -->
+    <div id="tab-locations" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Pharmacy Locations</div>
+          <button class="btn btn-primary" onclick="Pharmacy.openAddPharmacy()">+ Add Pharmacy</button>
+        </div>
+        <div id="locations-list" class="mt-3">
+          <p class="text-gray text-sm">Loading…</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -296,7 +316,7 @@
   <div class="card">
     <div class="card-header">
       <div class="card-title">Lab Orders</div>
-      <div style="display:flex;gap:10px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
         <select class="form-control" id="lab-priority-filter" style="width:140px"
                 onchange="Laboratory.priority=$('lab-priority-filter').value;Laboratory.load(1)">
           <option value="">All Priority</option>
@@ -308,6 +328,7 @@
           <option>Pending</option><option>In_Progress</option>
           <option>Completed</option><option>Cancelled</option>
         </select>
+        <button class="btn btn-primary" onclick="Laboratory.openNewOrder()">+ New Lab Order</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -425,7 +446,7 @@
           <div class="form-group"><label class="form-label">Specialization *</label><select class="form-control" name="spec_id" required><option value="">Select</option></select></div>
         </div>
         <div class="form-row col-3">
-          <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-control" name="date_of_birth" type="date"></div>
+          <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-control" name="date_of_birth" type="date" placeholder="Optional"></div>
           <div class="form-group"><label class="form-label">License Number *</label><input class="form-control" name="license_number" required></div>
           <div class="form-group"><label class="form-label">Experience (yrs)</label><input class="form-control" name="experience_years" type="number" min="0"></div>
         </div>
@@ -496,18 +517,52 @@
     </div>
     <div class="modal-body">
       <form id="book-appt-form">
-        <div class="form-group"><label class="form-label">Patient ID *</label><input class="form-control" id="appt-patient-id" type="number" placeholder="Enter Patient ID" required></div>
+        <div class="form-group">
+          <label class="form-label">Patient ID *</label>
+          <input class="form-control" id="appt-patient-id" type="number" placeholder="Enter Patient ID" required>
+        </div>
         <div class="form-row col-2">
-          <div class="form-group"><label class="form-label">Doctor ID *</label><input class="form-control" id="appt-doctor-id" type="number" placeholder="Enter Doctor ID" oninput="Appointments.loadSlots()"></div>
-          <div class="form-group"><label class="form-label">Date *</label><input class="form-control" id="appt-date" type="date" oninput="Appointments.loadSlots()"></div>
+          <div class="form-group">
+            <label class="form-label">Doctor ID *</label>
+            <input class="form-control" id="appt-doctor-id" type="number" placeholder="Enter Doctor ID"
+                   oninput="Appointments.loadSlots()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date *</label>
+            <input class="form-control" id="appt-date" type="date" oninput="Appointments.loadSlots()">
+          </div>
         </div>
         <div id="available-slots"></div>
-        <div class="form-group mt-3"><label class="form-label">Reason for Visit</label><textarea class="form-control" id="appt-reason" rows="2" placeholder="Brief description…"></textarea></div>
+        <div class="form-group mt-3">
+          <label class="form-label">Reason for Visit</label>
+          <textarea class="form-control" id="appt-reason" rows="2" placeholder="Brief description…"></textarea>
+        </div>
       </form>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('book-appt-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="Appointments.book()">Book Appointment</button>
+      <button class="btn btn-primary" id="btn-book-appt" onclick="Appointments.book()">Book Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Appointment Modal -->
+<div id="cancel-modal" class="modal-overlay hidden">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3>Cancel Appointment</h3>
+      <button class="close-btn" onclick="Modal.close('cancel-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cancel-appt-id">
+      <div class="form-group">
+        <label class="form-label">Cancellation Reason (optional)</label>
+        <textarea class="form-control" id="cancel-reason" rows="3" placeholder="Enter reason…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Modal.close('cancel-modal')">Back</button>
+      <button class="btn btn-danger" onclick="Appointments.confirmCancel()">✘ Confirm Cancel</button>
     </div>
   </div>
 </div>
@@ -529,7 +584,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('complete-modal')">Cancel</button>
-      <button class="btn btn-success" onclick="Appointments.complete()">✔ Complete & Save Record</button>
+      <button class="btn btn-success" id="btn-complete-appt" onclick="Appointments.complete()">✔ Complete & Save Record</button>
     </div>
   </div>
 </div>
@@ -553,7 +608,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('bill-gen-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="Appointments.generateBill()">Generate Bill</button>
+      <button class="btn btn-primary" id="btn-gen-bill" onclick="Appointments.generateBill()">Generate Bill</button>
     </div>
   </div>
 </div>
@@ -590,7 +645,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('payment-modal')">Cancel</button>
-      <button class="btn btn-success" onclick="Billing.processPayment()">💰 Process Payment</button>
+      <button class="btn btn-success" id="btn-process-pay" onclick="Billing.processPayment()">💰 Process Payment</button>
     </div>
   </div>
 </div>
@@ -607,13 +662,206 @@
       <p class="text-bold mb-2" id="stock-med-name"></p>
       <p class="text-gray text-sm mb-3" id="stock-current"></p>
       <div class="form-group">
-        <label class="form-label">Quantity Change (+ to add, - to deduct)</label>
+        <label class="form-label">Quantity Change (+ to add, − to deduct)</label>
         <input class="form-control" id="stock-qty" type="number" placeholder="e.g. 100 or -10">
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('stock-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="Pharmacy.saveStock()">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Medicine Modal -->
+<div id="medicine-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="medicine-modal-title">Add Medicine</h3>
+      <button class="close-btn" onclick="Modal.close('medicine-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="med-id">
+      <form id="medicine-form">
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select class="form-control" name="category_id" required>
+              <option value="">Select Category</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dosage Form</label>
+            <select class="form-control" name="dosage_form">
+              <option>Tablet</option><option>Capsule</option><option>Syrup</option>
+              <option>Injection</option><option>Cream</option><option>Drops</option>
+              <option>Inhaler</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label">Medicine Name *</label>
+            <input class="form-control" name="medicine_name" required placeholder="Brand name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Generic Name</label>
+            <input class="form-control" name="generic_name" placeholder="Generic / INN name">
+          </div>
+        </div>
+        <div class="form-row col-3">
+          <div class="form-group">
+            <label class="form-label">Strength *</label>
+            <input class="form-control" name="strength" required placeholder="e.g. 500mg">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Price</label>
+            <input class="form-control" name="unit_price" type="number" step="0.01" min="0" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Requires Prescription</label>
+            <select class="form-control" name="requires_rx">
+              <option value="1">Yes (Rx)</option>
+              <option value="0">No (OTC)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Manufacturer</label>
+          <input class="form-control" name="manufacturer" placeholder="Manufacturer name">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Modal.close('medicine-modal')">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-medicine" onclick="Pharmacy.saveMedicine()">Save Medicine</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Inventory Modal -->
+<div id="inventory-modal" class="modal-overlay hidden">
+  <div class="modal modal-md">
+    <div class="modal-header">
+      <h3 id="inv-modal-title">Add Inventory Record</h3>
+      <button class="close-btn" onclick="Modal.close('inventory-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="inv-id">
+      <form id="inventory-form">
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label">Medicine *</label>
+            <select class="form-control" name="medicine_id" required>
+              <option value="">Select Medicine</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pharmacy *</label>
+            <select class="form-control" name="pharmacy_id" required>
+              <option value="">Select Pharmacy</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row col-3">
+          <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input class="form-control" name="quantity" type="number" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reorder Level</label>
+            <input class="form-control" name="reorder_level" type="number" min="0" value="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Cost</label>
+            <input class="form-control" name="unit_cost" type="number" step="0.01" min="0" value="0">
+          </div>
+        </div>
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label">Batch Number</label>
+            <input class="form-control" name="batch_number" placeholder="e.g. BATCH-001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiry Date *</label>
+            <input class="form-control" name="expiry_date" type="date" required>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Modal.close('inventory-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="Pharmacy.saveInventory()">Add to Inventory</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Pharmacy Location Modal -->
+<div id="pharmacy-loc-modal" class="modal-overlay hidden">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3>Add Pharmacy Location</h3>
+      <button class="close-btn" onclick="Modal.close('pharmacy-loc-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="pharmacy-loc-form">
+        <div class="form-group">
+          <label class="form-label">Pharmacy Name *</label>
+          <input class="form-control" name="pharmacy_name" required placeholder="e.g. Main Pharmacy">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input class="form-control" name="location" placeholder="e.g. Ground Floor, Block A">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-control" name="phone" placeholder="Phone number">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Modal.close('pharmacy-loc-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="Pharmacy.savePharmacy()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Lab Order Modal -->
+<div id="new-order-modal" class="modal-overlay hidden">
+  <div class="modal modal-md">
+    <div class="modal-header">
+      <h3>New Lab Order</h3>
+      <button class="close-btn" onclick="Modal.close('new-order-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="new-order-form">
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label">Appointment ID *</label>
+            <input class="form-control" name="appointment_id" type="number" required placeholder="Enter Appointment ID">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Doctor ID *</label>
+            <input class="form-control" name="doctor_id" type="number" required placeholder="Enter Doctor ID">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-control" name="priority">
+            <option value="Routine">Routine</option>
+            <option value="Urgent">Urgent</option>
+            <option value="STAT">STAT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" name="notes" rows="2" placeholder="Clinical notes…"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Modal.close('new-order-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="Laboratory.saveNewOrder()">Create Order</button>
     </div>
   </div>
 </div>
@@ -650,7 +898,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('add-result-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="Laboratory.saveResult()">Save Result</button>
+      <button class="btn btn-primary" id="btn-save-result" onclick="Laboratory.saveResult()">Save Result</button>
     </div>
   </div>
 </div>

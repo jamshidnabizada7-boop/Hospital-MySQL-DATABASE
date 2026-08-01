@@ -47,7 +47,7 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/appointments/slots/available?doctor_id=&date=
+// GET /api/appointments/slots/available
 router.get('/slots/available', authenticate, async (req, res) => {
   const { doctor_id, date } = req.query;
   if (!doctor_id || !date)
@@ -83,24 +83,38 @@ router.get('/:id', authenticate, async (req, res) => {
       JOIN Doctor           d    ON ds.Doctor_ID=d.Doctor_ID
       JOIN Department       dept ON d.Dept_ID=dept.Dept_ID
       WHERE a.Appointment_ID=?`, [req.params.id]);
-    if (!rows.length) return res.status(404).json({ success: false, message: 'Appointment not found' });
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// POST /api/appointments — book
+// POST /api/appointments — book using direct INSERT (avoids SP output var issue)
 router.post('/', authenticate, async (req, res) => {
   const { patient_id, slot_id, reason } = req.body;
+  const conn = await db.getConnection();
   try {
-    const [out] = await db.query(
-      'CALL BookAppointment(?,?,?,@appt_id,@msg); SELECT @appt_id AS id, @msg AS message;',
+    await conn.beginTransaction();
+
+    const [[slot]] = await conn.query(
+      'SELECT Status FROM Appointment_Slot WHERE Slot_ID=? FOR UPDATE', [slot_id]);
+    if (!slot)
+      return conn.rollback().then(() => { conn.release(); res.status(404).json({ success: false, message: 'Slot not found' }); });
+    if (slot.Status !== 'Open')
+      return conn.rollback().then(() => { conn.release(); res.status(409).json({ success: false, message: 'Slot is not available' }); });
+
+    const [result] = await conn.query(
+      'INSERT INTO Appointment(Patient_ID,Slot_ID,Reason) VALUES(?,?,?)',
       [patient_id, slot_id, reason || '']);
-    const result = out[1][0];
-    if (!result.id) return res.status(409).json({ success: false, message: result.message });
-    res.status(201).json({ success: true, id: result.id, message: result.message });
+    const appt_id = result.insertId;
+    await conn.query('UPDATE Appointment_Slot SET Status=? WHERE Slot_ID=?', ['Booked', slot_id]);
+    await conn.commit();
+    conn.release();
+    res.status(201).json({ success: true, id: appt_id, message: 'Appointment booked successfully' });
   } catch (err) {
+    await conn.rollback();
+    conn.release();
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -108,13 +122,27 @@ router.post('/', authenticate, async (req, res) => {
 // PUT /api/appointments/:id/cancel
 router.put('/:id/cancel', authenticate, async (req, res) => {
   const { reason = '' } = req.body;
+  const conn = await db.getConnection();
   try {
-    const [out] = await db.query(
-      'CALL CancelAppointment(?,?,@msg); SELECT @msg AS message;',
-      [req.params.id, reason]);
-    const msg = out[1][0].message;
-    res.json({ success: true, message: msg });
+    await conn.beginTransaction();
+    const [[appt]] = await conn.query(
+      'SELECT Appointment_Status,Slot_ID FROM Appointment WHERE Appointment_ID=? FOR UPDATE',
+      [req.params.id]);
+    if (!appt)   { await conn.rollback(); conn.release(); return res.status(404).json({ success:false, message:'Not found' }); }
+    if (appt.Appointment_Status !== 'Scheduled') {
+      await conn.rollback(); conn.release();
+      return res.status(400).json({ success:false, message:`Cannot cancel a ${appt.Appointment_Status} appointment` });
+    }
+    await conn.query(
+      'UPDATE Appointment SET Appointment_Status=?,Cancelled_Reason=? WHERE Appointment_ID=?',
+      ['Cancelled', reason, req.params.id]);
+    await conn.query('UPDATE Appointment_Slot SET Status=? WHERE Slot_ID=?', ['Open', appt.Slot_ID]);
+    await conn.commit();
+    conn.release();
+    res.json({ success: true, message: 'Appointment cancelled' });
   } catch (err) {
+    await conn.rollback();
+    conn.release();
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -122,13 +150,37 @@ router.put('/:id/cancel', authenticate, async (req, res) => {
 // PUT /api/appointments/:id/complete
 router.put('/:id/complete', authenticate, async (req, res) => {
   const { diagnosis, treatment, notes } = req.body;
+  const conn = await db.getConnection();
   try {
-    const [out] = await db.query(
-      'CALL CompleteAppointment(?,?,?,?,@rec_id,@msg); SELECT @rec_id AS record_id, @msg AS message;',
-      [req.params.id, diagnosis || 'Pending', treatment || '', notes || '']);
-    const result = out[1][0];
-    res.json({ success: true, record_id: result.record_id, message: result.message });
+    await conn.beginTransaction();
+    const [[appt]] = await conn.query(
+      'SELECT Appointment_Status,Slot_ID FROM Appointment WHERE Appointment_ID=? FOR UPDATE',
+      [req.params.id]);
+    if (!appt || appt.Appointment_Status !== 'Scheduled') {
+      await conn.rollback(); conn.release();
+      return res.status(400).json({ success:false, message:'Appointment must be Scheduled to complete' });
+    }
+    // Update appointment status (trigger auto-creates Medical_Record skeleton)
+    await conn.query(
+      'UPDATE Appointment SET Appointment_Status=? WHERE Appointment_ID=?',
+      ['Completed', req.params.id]);
+    await conn.query('UPDATE Appointment_Slot SET Status=? WHERE Slot_ID=?', ['Completed', appt.Slot_ID]);
+
+    // Fill in the medical record created by the trigger
+    await conn.query(
+      `UPDATE Medical_Record SET Diagnosis=?,Treatment=?,Visit_Notes=?
+       WHERE Appointment_ID=?`,
+      [diagnosis || 'Pending', treatment || '', notes || null, req.params.id]);
+
+    const [[rec]] = await conn.query(
+      'SELECT Record_ID FROM Medical_Record WHERE Appointment_ID=?', [req.params.id]);
+
+    await conn.commit();
+    conn.release();
+    res.json({ success: true, record_id: rec?.Record_ID, message: 'Appointment completed and medical record created' });
   } catch (err) {
+    await conn.rollback();
+    conn.release();
     res.status(500).json({ success: false, message: err.message });
   }
 });

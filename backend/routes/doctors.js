@@ -60,13 +60,16 @@ router.post('/', authenticate, async (req, res) => {
   const { dept_id, spec_id, first_name, last_name, gender, date_of_birth,
           license_number, qualification, experience_years, consultation_fee,
           phone, email } = req.body;
+  if (!first_name || !last_name || !dept_id || !spec_id || !license_number || !phone || !email)
+    return res.status(400).json({ success: false, message: 'Required: first_name, last_name, dept_id, spec_id, license_number, phone, email' });
   try {
     const [result] = await db.query(`
       INSERT INTO Doctor(Dept_ID,Spec_ID,First_Name,Last_Name,Gender,Date_Of_Birth,
         License_Number,Qualification,Experience_Years,Consultation_Fee,Phone,Email)
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [dept_id,spec_id,first_name,last_name,gender,date_of_birth,
-       license_number,qualification||'',experience_years||0,consultation_fee||0,phone,email]);
+      [dept_id, spec_id, first_name, last_name, gender||'Male',
+       date_of_birth || '1980-01-01',
+       license_number, qualification||'', experience_years||0, consultation_fee||0, phone, email]);
     res.status(201).json({ success: true, id: result.insertId, message: 'Doctor added' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

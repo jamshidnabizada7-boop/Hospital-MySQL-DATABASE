@@ -1,86 +1,136 @@
 $base = "http://localhost:5000/api"
 $lr = Invoke-RestMethod -Uri "$base/auth/login" -Method POST -Body '{"username":"admin","password":"x"}' -ContentType "application/json"
 $h = @{ Authorization = "Bearer $($lr.token)" }
-Write-Host "=== HMS API TEST SUITE ==="
+Write-Host "=== HMS API TEST SUITE v2 ==="
 Write-Host "User: $($lr.user.name) [$($lr.user.role)]"
 Write-Host ""
 
 $eps = @(
-    @{name="DASHBOARD";         url="dashboard/stats"},
-    @{name="PATIENTS_LIST";     url="patients?limit=3"},
-    @{name="PATIENT_HISTORY";   url="patients/1/history"},
-    @{name="PATIENT_APPTS";     url="patients/1/appointments"},
-    @{name="DOCTORS_LIST";      url="doctors?limit=3"},
-    @{name="DOCTOR_DEPTS";      url="doctors/meta/departments"},
-    @{name="DOCTOR_SPECS";      url="doctors/meta/specializations"},
-    @{name="DOCTOR_SCHEDULE";   url="doctors/1/schedule?from=2026-08-01&to=2026-12-31"},
-    @{name="APPTS_ALL";         url="appointments?limit=3"},
-    @{name="APPTS_SCHEDULED";   url="appointments?status=Scheduled&limit=5"},
-    @{name="APPTS_COMPLETED";   url="appointments?status=Completed&limit=5"},
-    @{name="SLOTS_AVAIL";       url="appointments/slots/available?doctor_id=1&date=2026-09-15"},
-    @{name="BILLING_LIST";      url="billing?limit=3"},
-    @{name="BILLING_PENDING";   url="billing?status=Pending"},
-    @{name="BILLING_DETAIL";    url="billing/1"},
-    @{name="MEDICINES_LIST";    url="pharmacy/medicines?limit=5"},
-    @{name="INVENTORY_ALL";     url="pharmacy/inventory?limit=5"},
-    @{name="INVENTORY_LOW";     url="pharmacy/inventory?status=low"},
-    @{name="INVENTORY_EXPIRING";url="pharmacy/inventory?status=expiring"},
-    @{name="MED_CATEGORIES";    url="pharmacy/categories"},
-    @{name="LAB_ORDERS";        url="lab/orders?limit=5"},
-    @{name="LAB_PENDING";       url="lab/orders?status=Pending"},
-    @{name="LAB_ORDER_DETAIL";  url="lab/orders/1"},
-    @{name="LAB_TESTS";         url="lab/tests"},
-    @{name="MED_RECORD";        url="medical/records/1"},
-    @{name="PRESCRIPTIONS";     url="medical/prescriptions/1"},
-    @{name="MED_HISTORY";       url="medical/history/1"},
-    @{name="RPT_REVENUE";       url="reports/revenue?from=2026-01-01&to=2026-12-31"},
-    @{name="RPT_APPOINTMENTS";  url="reports/appointments?from=2026-01-01&to=2026-12-31"},
-    @{name="RPT_INVENTORY";     url="reports/inventory"},
-    @{name="RPT_LAB";           url="reports/lab"},
-    @{name="AUTH_ME";           url="auth/me"},
-    @{name="HEALTH";            url="health"}
+  # Core
+  @{n="HEALTH";              u="health"},
+  @{n="DASHBOARD";           u="dashboard/stats"},
+  @{n="AUTH_ME";             u="auth/me"},
+  # Patients
+  @{n="PATIENTS_LIST";       u="patients?limit=3"},
+  @{n="PATIENT_1";           u="patients/1"},
+  @{n="PATIENT_HISTORY";     u="patients/1/history"},
+  @{n="PATIENT_APPTS";       u="patients/1/appointments"},
+  # Doctors
+  @{n="DOCTORS_LIST";        u="doctors?limit=3"},
+  @{n="DOCTOR_1";            u="doctors/1"},
+  @{n="DOCTOR_DEPTS";        u="doctors/meta/departments"},
+  @{n="DOCTOR_SPECS";        u="doctors/meta/specializations"},
+  @{n="DOCTOR_SCHEDULE";     u="doctors/1/schedule?from=2026-01-01&to=2026-12-31"},
+  # Appointments
+  @{n="APPTS_ALL";           u="appointments?limit=5"},
+  @{n="APPTS_SCHEDULED";     u="appointments?status=Scheduled&limit=3"},
+  @{n="APPTS_COMPLETED";     u="appointments?status=Completed&limit=3"},
+  @{n="SLOTS_AVAIL";         u="appointments/slots/available?doctor_id=1&date=2026-10-01"},
+  @{n="APPT_1";              u="appointments/1"},
+  # Billing
+  @{n="BILLING_LIST";        u="billing?limit=3"},
+  @{n="BILLING_PENDING";     u="billing?status=Pending"},
+  @{n="BILLING_DETAIL_1";    u="billing/1"},
+  # Pharmacy
+  @{n="MEDICINES_LIST";      u="pharmacy/medicines?limit=5"},
+  @{n="MEDICINE_1";          u="pharmacy/medicines/1"},
+  @{n="INVENTORY_ALL";       u="pharmacy/inventory?limit=5"},
+  @{n="INVENTORY_LOW";       u="pharmacy/inventory?status=low"},
+  @{n="INVENTORY_EXPIRING";  u="pharmacy/inventory?status=expiring"},
+  @{n="CATEGORIES";          u="pharmacy/categories"},
+  @{n="LOCATIONS";           u="pharmacy/locations"},
+  # Laboratory
+  @{n="LAB_ORDERS";          u="lab/orders?limit=5"},
+  @{n="LAB_PENDING";         u="lab/orders?status=Pending"},
+  @{n="LAB_ORDER_1";         u="lab/orders/1"},
+  @{n="LAB_TESTS";           u="lab/tests"},
+  # Medical
+  @{n="MED_RECORD";          u="medical/records/1"},
+  @{n="PRESCRIPTIONS";       u="medical/prescriptions/1"},
+  @{n="MED_HISTORY";         u="medical/history/1"},
+  # Reports
+  @{n="RPT_REVENUE";         u="reports/revenue?from=2026-01-01&to=2026-12-31"},
+  @{n="RPT_APPOINTMENTS";    u="reports/appointments?from=2026-01-01&to=2026-12-31"},
+  @{n="RPT_INVENTORY";       u="reports/inventory"},
+  @{n="RPT_LAB";             u="reports/lab"},
+  # Frontend
+  @{n="FRONTEND";            u="http://localhost:5000"}
 )
 
 $pass=0; $fail=0; $failures=@()
 
 foreach ($ep in $eps) {
-    try {
-        $r = Invoke-WebRequest -Uri "$base/$($ep.url)" -Headers $h -UseBasicParsing -ErrorAction Stop
-        $j = $r.Content | ConvertFrom-Json -ErrorAction SilentlyContinue
-        $info = ""
-        if ($j.total -ne $null)         { $info = "total=$($j.total)" }
-        elseif ($j.stats)               { $info = "pts=$($j.stats.total_patients) drs=$($j.stats.active_doctors)" }
-        elseif ($j.data -is [array])    { $info = "rows=$($j.data.Count)" }
-        elseif ($j.summary)             { $info = "collected=$($j.summary.total_collected)" }
-        elseif ($j.low_stock -is [array]){ $info = "low=$($j.low_stock.Count) exp=$($j.expiring.Count)" }
-        elseif ($j.status -eq "ok")     { $info = $j.time }
-        else                            { $info = "len=$($r.Content.Length)" }
-        Write-Host "PASS  $($ep.name.PadRight(22)) [$info]"
-        $pass++
-    } catch {
-        $code = ""
-        try { $code = $_.Exception.Response.StatusCode.value__ } catch {}
-        Write-Host "FAIL  $($ep.name.PadRight(22)) HTTP=$code $($_.Exception.Message.Split('(')[-1].TrimEnd(')'))"
-        $fail++
-        $failures += $ep.name
-    }
+  $url = if ($ep.u.StartsWith("http")) { $ep.u } else { "$base/$($ep.u)" }
+  try {
+    $r = Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -ErrorAction Stop
+    $j = $r.Content | ConvertFrom-Json -ErrorAction SilentlyContinue
+    $info = if ($j.total -ne $null) { "total=$($j.total)" }
+            elseif ($j.stats)       { "pts=$($j.stats.total_patients)" }
+            elseif ($j.data -is [array]) { "rows=$($j.data.Count)" }
+            elseif ($j.status -eq "ok")  { $j.time }
+            else { "len=$($r.Content.Length)" }
+    Write-Host "PASS  $($ep.n.PadRight(22)) $info"
+    $pass++
+  } catch {
+    $code = try{$_.Exception.Response.StatusCode.value__}catch{0}
+    Write-Host "FAIL  $($ep.n.PadRight(22)) HTTP $code"
+    $fail++
+    $failures += $ep.n
+  }
 }
 
-# Test frontend HTML
+# POST tests
+Write-Host ""
+Write-Host "--- POST / PUT / DELETE tests ---"
+
+# Test POST /patients (create)
 try {
-    $fw = Invoke-WebRequest -Uri "http://localhost:5000" -UseBasicParsing -ErrorAction Stop
-    Write-Host "PASS  FRONTEND                 [HTML len=$($fw.Content.Length) bytes]"
+  $body = '{"first_name":"Test","last_name":"Patient","gender":"Male","date_of_birth":"2000-01-01","blood_group":"O+","phone":"0799999999","emergency_name":"Em","emergency_phone":"0799999998"}'
+  $r = Invoke-RestMethod -Uri "$base/patients" -Method POST -Body $body -ContentType "application/json" -Headers $h
+  if ($r.success) { Write-Host "PASS  POST_PATIENT             id=$($r.id)"; $pass++ }
+  else            { Write-Host "FAIL  POST_PATIENT             $($r.message)"; $fail++; $failures+="POST_PATIENT" }
+  # cleanup
+  if ($r.id) { Invoke-RestMethod -Uri "$base/patients/$($r.id)" -Method DELETE -Headers $h | Out-Null }
+} catch { Write-Host "FAIL  POST_PATIENT             $($_.Exception.Message)"; $fail++; $failures+="POST_PATIENT" }
+
+# Test POST /pharmacy/categories
+try {
+  $body = '{"category_name":"TestCat_Delete","description":"test"}'
+  $r = Invoke-RestMethod -Uri "$base/pharmacy/categories" -Method POST -Body $body -ContentType "application/json" -Headers $h
+  if ($r.success) { Write-Host "PASS  POST_CATEGORY            id=$($r.category_id)"; $pass++ }
+  else            { Write-Host "FAIL  POST_CATEGORY            $($r.message)"; $fail++; $failures+="POST_CATEGORY" }
+} catch { Write-Host "FAIL  POST_CATEGORY            $($_.Exception.Message)"; $fail++; $failures+="POST_CATEGORY" }
+
+# Test PUT /pharmacy/inventory/:id/stock
+try {
+  $body = '{"qty_change":10}'
+  $r = Invoke-RestMethod -Uri "$base/pharmacy/inventory/1/stock" -Method PUT -Body $body -ContentType "application/json" -Headers $h
+  if ($r.success) { Write-Host "PASS  PUT_STOCK                qty=$($r.new_quantity)"; $pass++ }
+  else            { Write-Host "FAIL  PUT_STOCK                $($r.message)"; $fail++; $failures+="PUT_STOCK" }
+  # undo
+  $body2 = '{"qty_change":-10}'
+  Invoke-RestMethod -Uri "$base/pharmacy/inventory/1/stock" -Method PUT -Body $body2 -ContentType "application/json" -Headers $h | Out-Null
+} catch { Write-Host "FAIL  PUT_STOCK                $($_.Exception.Message)"; $fail++; $failures+="PUT_STOCK" }
+
+# Test POST /lab/orders (use existing appt)
+try {
+  $body = '{"appointment_id":22,"doctor_id":1,"priority":"Routine","notes":"API test order"}'
+  $r = Invoke-RestMethod -Uri "$base/lab/orders" -Method POST -Body $body -ContentType "application/json" -Headers $h
+  if ($r.success) {
+    Write-Host "PASS  POST_LAB_ORDER           id=$($r.order_id)"
     $pass++
-} catch {
-    Write-Host "FAIL  FRONTEND"
-    $fail++
-    $failures += "FRONTEND"
-}
+    # Test add result
+    $body2 = "{`"test_id`":1,`"result`":`"Normal CBC`",`"is_abnormal`":0,`"remarks`":`"API test`"}"
+    $r2 = Invoke-RestMethod -Uri "$base/lab/orders/$($r.order_id)/results" -Method POST -Body $body2 -ContentType "application/json" -Headers $h
+    if ($r2.success) { Write-Host "PASS  POST_LAB_RESULT          id=$($r2.result_id)"; $pass++ }
+    else             { Write-Host "FAIL  POST_LAB_RESULT          $($r2.message)"; $fail++; $failures+="POST_LAB_RESULT" }
+  } else {
+    Write-Host "FAIL  POST_LAB_ORDER           $($r.message)"; $fail++; $failures+="POST_LAB_ORDER"
+  }
+} catch { Write-Host "FAIL  POST_LAB_ORDER           $($_.Exception.Message)"; $fail++; $failures+="POST_LAB_ORDER" }
 
 Write-Host ""
 Write-Host "==========================================="
 Write-Host " RESULTS: $pass PASS  |  $fail FAIL  |  $($pass+$fail) TOTAL"
-if ($failures.Count -gt 0) {
-    Write-Host " FAILED: $($failures -join ', ')"
-}
+if ($failures.Count -gt 0) { Write-Host " FAILED: $($failures -join ', ')" }
 Write-Host "==========================================="
