@@ -38,8 +38,8 @@ const Patients = {
         <td>
           <div style="display:flex;gap:6px">
             <button class="btn btn-outline btn-sm" onclick="Patients.viewHistory(${p.Patient_ID},'${p.First_Name} ${p.Last_Name}')">History</button>
-            <button class="btn btn-ghost btn-sm" onclick="Patients.openEdit(${p.Patient_ID})">✏️</button>
-            <button class="btn btn-ghost btn-sm text-danger" onclick="Patients.delete(${p.Patient_ID})">🗑️</button>
+            ${canDo('editPatient')   ? `<button class="btn btn-ghost btn-sm" onclick="Patients.openEdit(${p.Patient_ID})">✏️</button>` : ''}
+            ${canDo('deletePatient') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Patients.delete(${p.Patient_ID})">🗑️</button>` : ''}
           </div>
         </td>
       </tr>`).join('');

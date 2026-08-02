@@ -23,7 +23,7 @@ const Auth = {
       Api.setToken(res.token);
       this.user = res.user;
       this.showApp();
-      Toast.success(`Welcome back, ${res.user.name.split(' ')[0]}!`);
+      Toast.success(`Welcome, ${res.user.name.split(' ')[0]}!`);
     } else {
       Toast.error(res.message || 'Login failed');
     }

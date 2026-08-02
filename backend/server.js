@@ -44,8 +44,22 @@ app.get('/{*path}', (req, res) => {
 
 // ── Global error handler ──────────────────────────────────────
 app.use((err, req, res, _next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ success: false, message: 'Internal server error' });
+  console.error('Unhandled error:', err.code, err.message);
+
+  // Friendly MySQL error messages
+  const mysqlErrors = {
+    ER_DUP_ENTRY:          'A record with this value already exists.',
+    ER_NO_REFERENCED_ROW_2:'Referenced record not found. Check the ID you entered.',
+    ER_ROW_IS_REFERENCED_2:'Cannot delete — this record is used by other data.',
+    ER_DATA_TOO_LONG:      'One of the values you entered is too long.',
+    ER_BAD_NULL_ERROR:     'A required field is missing.',
+    ER_TRUNCATED_WRONG_VALUE: 'Invalid value entered in one of the fields.',
+  };
+
+  if (err.code && mysqlErrors[err.code])
+    return res.status(400).json({ success: false, message: mysqlErrors[err.code] });
+
+  res.status(500).json({ success: false, message: 'An unexpected error occurred. Please try again.' });
 });
 
 // ── Start ─────────────────────────────────────────────────────

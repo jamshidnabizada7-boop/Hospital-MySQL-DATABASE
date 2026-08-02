@@ -35,7 +35,7 @@ const Billing = {
           <div style="display:flex;gap:5px">
             <button class="btn btn-outline btn-sm" onclick="Billing.openDetail(${b.Bill_ID})">View</button>
             <button class="btn btn-ghost btn-sm"   onclick="Billing.printBill(${b.Bill_ID})" title="Print">🖨</button>
-            ${b.Bill_Status!=='Paid'&&b.Bill_Status!=='Cancelled'&&b.Bill_Status!=='Waived' ? `
+            ${b.Bill_Status!=='Paid'&&b.Bill_Status!=='Cancelled'&&b.Bill_Status!=='Waived' && canDo('processPayment') ? `
               <button class="btn btn-success btn-sm" onclick="Billing.openPayment(${b.Bill_ID},${b.Balance_Due})">💰 Pay</button>
             ` : ''}
           </div>

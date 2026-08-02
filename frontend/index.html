@@ -143,7 +143,7 @@
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <input class="form-control" id="patients-search" placeholder="🔍 Search patients…" style="width:220px">
-        <button class="btn btn-primary" onclick="Patients.openAdd()">+ New Patient</button>
+        <button class="btn btn-primary" id="btn-add-patient" onclick="Patients.openAdd()">+ New Patient</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -169,8 +169,8 @@
         <select class="form-control" id="doctors-dept-filter" style="width:180px" onchange="Doctors.load(1)">
           <option value="">All Departments</option>
         </select>
-        <button class="btn btn-primary" onclick="Doctors.openAdd()">+ Add Doctor</button>
-        <button class="btn btn-outline" onclick="Doctors.openAddSchedule()">📅 Add Schedule</button>
+        <button class="btn btn-primary" id="btn-add-doctor"    onclick="Doctors.openAdd()">+ Add Doctor</button>
+        <button class="btn btn-outline" id="btn-add-schedule"  onclick="Doctors.openAddSchedule()">📅 Add Schedule</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -200,7 +200,7 @@
           <option>Scheduled</option><option>Completed</option>
           <option>Cancelled</option><option>No_Show</option>
         </select>
-        <button class="btn btn-primary" onclick="Appointments.openBook()">+ Book Appointment</button>
+        <button class="btn btn-primary" id="btn-book-appt-open" onclick="Appointments.openBook()">+ Book Appointment</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -516,28 +516,48 @@
       <button class="close-btn" onclick="Modal.close('book-appt-modal')">×</button>
     </div>
     <div class="modal-body">
-      <form id="book-appt-form">
-        <div class="form-group">
-          <label class="form-label">Patient ID *</label>
-          <input class="form-control" id="appt-patient-id" type="number" placeholder="Enter Patient ID" required>
-        </div>
-        <div class="form-row col-2">
-          <div class="form-group">
-            <label class="form-label">Doctor ID *</label>
-            <input class="form-control" id="appt-doctor-id" type="number" placeholder="Enter Doctor ID"
-                   oninput="Appointments.loadSlots()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Date *</label>
-            <input class="form-control" id="appt-date" type="date" oninput="Appointments.loadSlots()">
-          </div>
-        </div>
-        <div id="available-slots"></div>
-        <div class="form-group mt-3">
-          <label class="form-label">Reason for Visit</label>
-          <textarea class="form-control" id="appt-reason" rows="2" placeholder="Brief description…"></textarea>
-        </div>
-      </form>
+      <!-- Hidden IDs -->
+      <input type="hidden" id="appt-patient-id">
+      <input type="hidden" id="appt-doctor-id">
+
+      <!-- Patient search -->
+      <div class="form-group" style="position:relative">
+        <label class="form-label">Patient *</label>
+        <input class="form-control" id="appt-patient-search"
+               placeholder="🔍 Type patient name or phone…"
+               oninput="Appointments.searchPatients()"
+               autocomplete="off">
+        <div id="book-patient-list" class="search-dropdown"></div>
+        <div id="selected-patient-display"></div>
+      </div>
+
+      <!-- Doctor search -->
+      <div class="form-group" style="position:relative">
+        <label class="form-label">Doctor *</label>
+        <input class="form-control" id="appt-doctor-search"
+               placeholder="🔍 Type doctor name or department…"
+               oninput="Appointments.searchDoctors()"
+               autocomplete="off">
+        <div id="book-doctor-list" class="search-dropdown"></div>
+        <div id="selected-doctor-display"></div>
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <label class="form-label">Appointment Date *</label>
+        <input class="form-control" id="appt-date" type="date"
+               oninput="Appointments.loadSlots()">
+      </div>
+
+      <!-- Available slots (loaded dynamically) -->
+      <div id="available-slots"></div>
+
+      <!-- Reason -->
+      <div class="form-group mt-3">
+        <label class="form-label">Reason for Visit</label>
+        <textarea class="form-control" id="appt-reason" rows="2"
+                  placeholder="Brief description of the visit…"></textarea>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('book-appt-modal')">Cancel</button>
@@ -920,13 +940,39 @@
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
 <script>
-  // Init search listeners after DOM ready
+  // Apply role-based UI after login
+  function applyRoleUI() {
+    // Header buttons
+    const btnMap = {
+      'btn-add-patient':   'addPatient',
+      'btn-add-doctor':    'addDoctor',
+      'btn-add-schedule':  'addSchedule',
+      'btn-add-medicine':  'addMedicine',
+      'btn-add-inventory': 'addInventory',
+      'btn-add-pharmacy':  'addPharmacy',
+      'btn-book-appt':     'bookAppointment',
+      'btn-new-lab-order': 'createLabOrder',
+    };
+    Object.entries(btnMap).forEach(([id, perm]) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = canDo(perm) ? '' : 'none';
+    });
+
+    // Page-level header action buttons (in the page section headers)
+    const patAddBtn = document.querySelector('#page-patients .btn-primary[onclick*="openAdd"]');
+    if (patAddBtn) patAddBtn.style.display = canDo('addPatient') ? '' : 'none';
+
+    const docAddBtn = document.getElementById('btn-add-doctor');
+    if (docAddBtn) docAddBtn.style.display = canDo('addDoctor') ? '' : 'none';
+
+    const schedBtn = document.getElementById('btn-add-schedule');
+    if (schedBtn) schedBtn.style.display = canDo('addSchedule') ? '' : 'none';
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initPatientsSearch();
-    // Doctors search
     const ds = document.getElementById('doctors-search');
     if (ds) ds.addEventListener('input', debounce(e => { Doctors.search=e.target.value; Doctors.load(1); }, 350));
-    // Init pharmacy tabs
     document.querySelectorAll('.tabs-container').forEach(c => {
       c.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {

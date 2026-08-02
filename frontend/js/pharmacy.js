@@ -62,8 +62,8 @@ const Pharmacy = {
         <td>${m.Requires_Rx ? '<span class="badge badge-warning">Rx</span>' : '<span class="badge badge-success">OTC</span>'}</td>
         <td>
           <div style="display:flex;gap:5px">
-            <button class="btn btn-ghost btn-sm" onclick="Pharmacy.openEditMedicine(${m.Medicine_ID})">✏️</button>
-            <button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteMedicine(${m.Medicine_ID})">🗑️</button>
+            ${canDo('editMedicine') ? `<button class="btn btn-ghost btn-sm" onclick="Pharmacy.openEditMedicine(${m.Medicine_ID})">✏️</button>` : ''}
+            ${canDo('editMedicine') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteMedicine(${m.Medicine_ID})">🗑️</button>` : ''}
           </div>
         </td>
       </tr>`).join('');
@@ -154,8 +154,8 @@ const Pharmacy = {
         <td>${Fmt.status(i.Stock_Status)}</td>
         <td>
           <div style="display:flex;gap:5px">
-            <button class="btn btn-outline btn-sm" onclick="Pharmacy.openStockUpdate(${i.Inventory_ID},'${i.Medicine_Name}',${i.Quantity_In_Stock})">Update Stock</button>
-            <button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteInventory(${i.Inventory_ID})">🗑️</button>
+            ${canDo('updateStock') ? `<button class="btn btn-outline btn-sm" onclick="Pharmacy.openStockUpdate(${i.Inventory_ID},'${i.Medicine_Name}',${i.Quantity_In_Stock})">Update Stock</button>` : ''}
+            ${canDo('addInventory') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteInventory(${i.Inventory_ID})">🗑️</button>` : ''}
           </div>
         </td>
       </tr>`).join('');

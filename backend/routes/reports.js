@@ -1,12 +1,15 @@
 /**
  * routes/reports.js — Analytics & report queries
+ * Admin + Accountant only
  */
 const router = require('express').Router();
 const db     = require('../db');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, adminOr, ROLES } = require('../middleware/auth');
+
+const canViewReports = adminOr(ROLES.ACCOUNTANT);
 
 // GET /api/reports/revenue?from=&to=
-router.get('/revenue', authenticate, async (req, res) => {
+router.get('/revenue', authenticate, canViewReports, async (req, res) => {
   const { from = '2020-01-01', to = '2030-12-31' } = req.query;
   try {
     const [daily] = await db.query(`
@@ -49,7 +52,7 @@ router.get('/revenue', authenticate, async (req, res) => {
 });
 
 // GET /api/reports/appointments?from=&to=
-router.get('/appointments', authenticate, async (req, res) => {
+router.get('/appointments', authenticate, canViewReports, async (req, res) => {
   const { from = '2020-01-01', to = '2030-12-31' } = req.query;
   try {
     const [byStatus] = await db.query(`
@@ -87,7 +90,7 @@ router.get('/appointments', authenticate, async (req, res) => {
 });
 
 // GET /api/reports/inventory
-router.get('/inventory', authenticate, async (req, res) => {
+router.get('/inventory', authenticate, canViewReports, async (req, res) => {
   try {
     const [lowStock] = await db.query(`
       SELECT m.Medicine_Name, m.Strength, ph.Pharmacy_Name,
@@ -124,7 +127,7 @@ router.get('/inventory', authenticate, async (req, res) => {
 });
 
 // GET /api/reports/lab
-router.get('/lab', authenticate, async (req, res) => {
+router.get('/lab', authenticate, canViewReports, async (req, res) => {
   try {
     const [abnormal] = await db.query(`
       SELECT CONCAT(p.First_Name,' ',p.Last_Name) AS patient,

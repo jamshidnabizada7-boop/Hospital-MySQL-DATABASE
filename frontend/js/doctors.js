@@ -59,7 +59,7 @@ const Doctors = {
         <td>
           <div style="display:flex;gap:6px">
             <button class="btn btn-outline btn-sm" onclick="Doctors.viewSchedule(${d.Doctor_ID},'Dr. ${d.First_Name} ${d.Last_Name}')">Schedule</button>
-            <button class="btn btn-ghost btn-sm" onclick="Doctors.openEdit(${d.Doctor_ID})">✏️</button>
+            ${canDo('editDoctor') ? `<button class="btn btn-ghost btn-sm" onclick="Doctors.openEdit(${d.Doctor_ID})">✏️</button>` : ''}
           </div>
         </td>
       </tr>`).join('');

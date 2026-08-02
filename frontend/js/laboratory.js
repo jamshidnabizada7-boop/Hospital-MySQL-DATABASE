@@ -41,8 +41,8 @@ const Laboratory = {
           <div style="display:flex;gap:5px;flex-wrap:wrap">
             <button class="btn btn-outline btn-sm" onclick="Laboratory.viewOrder(${o.Order_ID})">View</button>
             <button class="btn btn-ghost btn-sm"   onclick="Laboratory.printOrder(${o.Order_ID})" title="Print">🖨</button>
-            ${o.Status!=='Completed'&&o.Status!=='Cancelled'?`<button class="btn btn-success btn-sm" onclick="Laboratory.openAddResult(${o.Order_ID})">+ Result</button>`:''}
-            ${o.Status==='Pending'?`<button class="btn btn-ghost btn-sm text-danger" onclick="Laboratory.cancelOrder(${o.Order_ID})">✘</button>`:''}
+            ${o.Status!=='Completed'&&o.Status!=='Cancelled'&&canDo('addLabResult')?`<button class="btn btn-success btn-sm" onclick="Laboratory.openAddResult(${o.Order_ID})">+ Result</button>`:''}
+            ${o.Status==='Pending'&&canDo('createLabOrder')?`<button class="btn btn-ghost btn-sm text-danger" onclick="Laboratory.cancelOrder(${o.Order_ID})">✘</button>`:''}
           </div>
         </td>
       </tr>`).join('');

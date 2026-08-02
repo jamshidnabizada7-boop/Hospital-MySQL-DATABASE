@@ -1,19 +1,29 @@
 /**
- * routes/appointments.js
+ * routes/appointments.js — Role-based access
+ * Admin:        full access
+ * Doctor:       see only own appointments; complete own appointments
+ * Receptionist: book, cancel, view all
+ * Others:       read only
  */
 const router = require('express').Router();
 const db     = require('../db');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, adminOr, ROLES } = require('../middleware/auth');
 
 // GET /api/appointments
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, adminOr(ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.ACCOUNTANT, ROLES.LAB_TECH), async (req, res) => {
   const { status, date, doctor_id, patient_id, page = 1, limit = 20 } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
   let where = '1=1';
   const params = [];
+
+  // Doctors see only their own appointments
+  if (req.user.role === ROLES.DOCTOR && req.user.doctorId) {
+    where += ' AND ds.Doctor_ID=?'; params.push(req.user.doctorId);
+  }
+
   if (status)     { where += ' AND a.Appointment_Status=?'; params.push(status); }
   if (date)       { where += ' AND ds.Work_Date=?';         params.push(date); }
-  if (doctor_id)  { where += ' AND ds.Doctor_ID=?';         params.push(doctor_id); }
+  if (doctor_id && req.user.role !== ROLES.DOCTOR) { where += ' AND ds.Doctor_ID=?'; params.push(doctor_id); }
   if (patient_id) { where += ' AND a.Patient_ID=?';         params.push(patient_id); }
 
   try {
@@ -48,7 +58,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // GET /api/appointments/slots/available
-router.get('/slots/available', authenticate, async (req, res) => {
+router.get('/slots/available', authenticate, adminOr(ROLES.RECEPTIONIST, ROLES.DOCTOR), async (req, res) => {
   const { doctor_id, date } = req.query;
   if (!doctor_id || !date)
     return res.status(400).json({ success: false, message: 'doctor_id and date required' });
@@ -70,12 +80,12 @@ router.get('/slots/available', authenticate, async (req, res) => {
 });
 
 // GET /api/appointments/:id
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', authenticate, adminOr(ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.ACCOUNTANT), async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT a.*, p.First_Name AS p_first, p.Last_Name AS p_last, p.Phone AS p_phone,
              d.First_Name AS d_first, d.Last_Name AS d_last,
-             dept.Dept_Name, ds.Work_Date, sl.Slot_Start, sl.Slot_End
+             dept.Dept_Name, ds.Work_Date, sl.Slot_Start, sl.Slot_End, ds.Doctor_ID
       FROM Appointment a
       JOIN Patient          p    ON a.Patient_ID=p.Patient_ID
       JOIN Appointment_Slot sl   ON a.Slot_ID=sl.Slot_ID
@@ -84,103 +94,89 @@ router.get('/:id', authenticate, async (req, res) => {
       JOIN Department       dept ON d.Dept_ID=dept.Dept_ID
       WHERE a.Appointment_ID=?`, [req.params.id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Not found' });
+
+    // Doctor can only view own appointment
+    if (req.user.role === ROLES.DOCTOR && rows[0].Doctor_ID !== req.user.doctorId)
+      return res.status(403).json({ success: false, message: 'You can only view your own appointments' });
+
     res.json({ success: true, data: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// POST /api/appointments — book using direct INSERT (avoids SP output var issue)
-router.post('/', authenticate, async (req, res) => {
+// POST /api/appointments — Receptionist or Admin can book
+router.post('/', authenticate, adminOr(ROLES.RECEPTIONIST), async (req, res) => {
   const { patient_id, slot_id, reason } = req.body;
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-
-    const [[slot]] = await conn.query(
-      'SELECT Status FROM Appointment_Slot WHERE Slot_ID=? FOR UPDATE', [slot_id]);
-    if (!slot)
-      return conn.rollback().then(() => { conn.release(); res.status(404).json({ success: false, message: 'Slot not found' }); });
-    if (slot.Status !== 'Open')
-      return conn.rollback().then(() => { conn.release(); res.status(409).json({ success: false, message: 'Slot is not available' }); });
-
+    const [[slot]] = await conn.query('SELECT Status FROM Appointment_Slot WHERE Slot_ID=? FOR UPDATE', [slot_id]);
+    if (!slot)              { await conn.rollback(); conn.release(); return res.status(404).json({ success:false, message:'Slot not found' }); }
+    if (slot.Status!=='Open'){ await conn.rollback(); conn.release(); return res.status(409).json({ success:false, message:'Slot is not available' }); }
     const [result] = await conn.query(
       'INSERT INTO Appointment(Patient_ID,Slot_ID,Reason) VALUES(?,?,?)',
-      [patient_id, slot_id, reason || '']);
-    const appt_id = result.insertId;
+      [patient_id, slot_id, reason||'']);
     await conn.query('UPDATE Appointment_Slot SET Status=? WHERE Slot_ID=?', ['Booked', slot_id]);
-    await conn.commit();
-    conn.release();
-    res.status(201).json({ success: true, id: appt_id, message: 'Appointment booked successfully' });
+    await conn.commit(); conn.release();
+    res.status(201).json({ success:true, id: result.insertId, message:'Appointment booked successfully' });
   } catch (err) {
-    await conn.rollback();
-    conn.release();
+    await conn.rollback(); conn.release();
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// PUT /api/appointments/:id/cancel
-router.put('/:id/cancel', authenticate, async (req, res) => {
+// PUT /api/appointments/:id/cancel — Receptionist or Admin
+router.put('/:id/cancel', authenticate, adminOr(ROLES.RECEPTIONIST), async (req, res) => {
   const { reason = '' } = req.body;
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
     const [[appt]] = await conn.query(
-      'SELECT Appointment_Status,Slot_ID FROM Appointment WHERE Appointment_ID=? FOR UPDATE',
-      [req.params.id]);
-    if (!appt)   { await conn.rollback(); conn.release(); return res.status(404).json({ success:false, message:'Not found' }); }
-    if (appt.Appointment_Status !== 'Scheduled') {
-      await conn.rollback(); conn.release();
-      return res.status(400).json({ success:false, message:`Cannot cancel a ${appt.Appointment_Status} appointment` });
-    }
-    await conn.query(
-      'UPDATE Appointment SET Appointment_Status=?,Cancelled_Reason=? WHERE Appointment_ID=?',
-      ['Cancelled', reason, req.params.id]);
+      'SELECT Appointment_Status,Slot_ID FROM Appointment WHERE Appointment_ID=? FOR UPDATE', [req.params.id]);
+    if (!appt)                                { await conn.rollback(); conn.release(); return res.status(404).json({ success:false, message:'Not found' }); }
+    if (appt.Appointment_Status!=='Scheduled'){ await conn.rollback(); conn.release(); return res.status(400).json({ success:false, message:`Cannot cancel a ${appt.Appointment_Status} appointment` }); }
+    await conn.query('UPDATE Appointment SET Appointment_Status=?,Cancelled_Reason=? WHERE Appointment_ID=?',['Cancelled',reason,req.params.id]);
     await conn.query('UPDATE Appointment_Slot SET Status=? WHERE Slot_ID=?', ['Open', appt.Slot_ID]);
-    await conn.commit();
-    conn.release();
-    res.json({ success: true, message: 'Appointment cancelled' });
+    await conn.commit(); conn.release();
+    res.json({ success:true, message:'Appointment cancelled' });
   } catch (err) {
-    await conn.rollback();
-    conn.release();
+    await conn.rollback(); conn.release();
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// PUT /api/appointments/:id/complete
-router.put('/:id/complete', authenticate, async (req, res) => {
+// PUT /api/appointments/:id/complete — Doctor completes own, Admin can do any
+router.put('/:id/complete', authenticate, adminOr(ROLES.DOCTOR), async (req, res) => {
   const { diagnosis, treatment, notes } = req.body;
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-    const [[appt]] = await conn.query(
-      'SELECT Appointment_Status,Slot_ID FROM Appointment WHERE Appointment_ID=? FOR UPDATE',
-      [req.params.id]);
-    if (!appt || appt.Appointment_Status !== 'Scheduled') {
+    const [[appt]] = await conn.query(`
+      SELECT a.Appointment_Status, a.Slot_ID, ds.Doctor_ID
+      FROM Appointment a
+      JOIN Appointment_Slot sl ON a.Slot_ID=sl.Slot_ID
+      JOIN Doctor_Schedule  ds ON sl.Schedule_ID=ds.Schedule_ID
+      WHERE a.Appointment_ID=? FOR UPDATE`, [req.params.id]);
+
+    if (!appt) { await conn.rollback(); conn.release(); return res.status(404).json({ success:false, message:'Not found' }); }
+    if (appt.Appointment_Status !== 'Scheduled') { await conn.rollback(); conn.release(); return res.status(400).json({ success:false, message:'Appointment must be Scheduled to complete' }); }
+
+    // Doctor can only complete their own appointments
+    if (req.user.role === ROLES.DOCTOR && appt.Doctor_ID !== req.user.doctorId) {
       await conn.rollback(); conn.release();
-      return res.status(400).json({ success:false, message:'Appointment must be Scheduled to complete' });
+      return res.status(403).json({ success:false, message:'You can only complete your own appointments' });
     }
-    // Update appointment status (trigger auto-creates Medical_Record skeleton)
-    await conn.query(
-      'UPDATE Appointment SET Appointment_Status=? WHERE Appointment_ID=?',
-      ['Completed', req.params.id]);
+
+    await conn.query('UPDATE Appointment SET Appointment_Status=? WHERE Appointment_ID=?', ['Completed', req.params.id]);
     await conn.query('UPDATE Appointment_Slot SET Status=? WHERE Slot_ID=?', ['Completed', appt.Slot_ID]);
-
-    // Fill in the medical record created by the trigger
-    await conn.query(
-      `UPDATE Medical_Record SET Diagnosis=?,Treatment=?,Visit_Notes=?
-       WHERE Appointment_ID=?`,
-      [diagnosis || 'Pending', treatment || '', notes || null, req.params.id]);
-
-    const [[rec]] = await conn.query(
-      'SELECT Record_ID FROM Medical_Record WHERE Appointment_ID=?', [req.params.id]);
-
-    await conn.commit();
-    conn.release();
-    res.json({ success: true, record_id: rec?.Record_ID, message: 'Appointment completed and medical record created' });
+    await conn.query(`UPDATE Medical_Record SET Diagnosis=?,Treatment=?,Visit_Notes=? WHERE Appointment_ID=?`,
+      [diagnosis||'Pending', treatment||'', notes||null, req.params.id]);
+    const [[rec]] = await conn.query('SELECT Record_ID FROM Medical_Record WHERE Appointment_ID=?', [req.params.id]);
+    await conn.commit(); conn.release();
+    res.json({ success:true, record_id: rec?.Record_ID, message:'Appointment completed and medical record created' });
   } catch (err) {
-    await conn.rollback();
-    conn.release();
+    await conn.rollback(); conn.release();
     res.status(500).json({ success: false, message: err.message });
   }
 });

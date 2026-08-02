@@ -440,3 +440,34 @@ select.form-control { cursor: pointer; }
   .form-row.col-2, .form-row.col-3 { grid-template-columns: 1fr; }
   .topbar-search { display: none; }
 }
+
+/* ── Search dropdown (Book Appointment) ───────────────── */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0; right: 0;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 200;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.search-dropdown:empty { display: none; }
+
+.search-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background var(--trans);
+}
+.search-item:last-child { border-bottom: none; }
+.search-item:hover { background: #f0f7ff; }
+
+.search-empty {
+  padding: 12px 14px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-style: italic;
+}
