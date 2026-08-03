@@ -27,7 +27,8 @@ app.use('/api/billing',     require('./routes/billing'));
 app.use('/api/pharmacy',    require('./routes/pharmacy'));
 app.use('/api/lab',         require('./routes/laboratory'));
 app.use('/api/medical',     require('./routes/medical'));
-app.use('/api/reports',     require('./routes/reports'));
+app.use('/api/reports',       require('./routes/reports'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_, res) =>

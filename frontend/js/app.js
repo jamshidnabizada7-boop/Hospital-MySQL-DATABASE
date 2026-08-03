@@ -108,10 +108,32 @@ const App = {
 
     // Apply UI visibility
     if (typeof applyRoleUI === 'function') setTimeout(applyRoleUI, 100);
+
+    // Init notifications
+    if (typeof Notifications !== 'undefined') Notifications.init();
+  },
+
+  // Refresh current page data without full reload
+  refreshCurrent() {
+    const btn = $('btn-refresh');
+    if (btn) { btn.style.transform = 'rotate(360deg)'; btn.style.transition = 'transform 0.5s'; setTimeout(() => { btn.style.transform = ''; btn.style.transition = ''; }, 500); }
+    const loaders = {
+      dashboard:    () => Dashboard.load(),
+      patients:     () => Patients.load(Patients.page),
+      doctors:      () => Doctors.load(Doctors.page),
+      appointments: () => Appointments.load(Appointments.page),
+      billing:      () => Billing.load(Billing.page),
+      pharmacy:     () => { Pharmacy.loadMedicines(Pharmacy.page); Pharmacy.loadInventory(1); },
+      laboratory:   () => Laboratory.load(Laboratory.page),
+      reports:      () => Reports.refresh(),
+    };
+    if (loaders[this.currentPage]) {
+      loaders[this.currentPage]();
+      Toast.info(`${$('page-title').textContent} refreshed`);
+    }
   },
 
   navigate(page) {
-    if (this.currentPage === page && page !== 'dashboard') return;
     this.currentPage = page;
 
     $$('.nav-item').forEach(i => i.classList.remove('active'));
