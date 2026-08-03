@@ -170,20 +170,57 @@ const Doctors = {
     setHTML('sched-content', html);
   },
 
-  openAddSchedule() { Modal.open('add-schedule-modal'); },
+  openAddSchedule() {
+    // Reset
+    $('schedule-doctor-id').value     = '';
+    $('schedule-doctor-search').value = '';
+    setHTML('schedule-doctor-list', '');
+    setHTML('schedule-doctor-display', '');
+    resetForm('schedule-form');
+    Modal.open('add-schedule-modal');
+  },
+
+  async searchDoctorForSchedule() {
+    const q = $('schedule-doctor-search').value.trim();
+    if (q.length < 2) { setHTML('schedule-doctor-list', ''); return; }
+    const res = await Api.getQ('/doctors', { search: q, limit: 8 });
+    if (!res.success || !res.data.length) {
+      setHTML('schedule-doctor-list', `<div class="search-empty">No doctors found for "${q}"</div>`); return;
+    }
+    const items = res.data.map(d => `
+      <div class="search-item" onclick="Doctors.selectDoctorForSchedule(${d.Doctor_ID},'Dr. ${d.First_Name} ${d.Last_Name}','${d.Dept_Name}')">
+        <div class="text-bold">Dr. ${d.First_Name} ${d.Last_Name}</div>
+        <div class="text-sm text-gray">${d.Dept_Name} · ${d.Spec_Name}</div>
+      </div>`).join('');
+    setHTML('schedule-doctor-list', items);
+  },
+
+  selectDoctorForSchedule(id, name, dept) {
+    $('schedule-doctor-id').value     = id;
+    $('schedule-doctor-search').value = name;
+    setHTML('schedule-doctor-list', '');
+    setHTML('schedule-doctor-display', `
+      <div class="alert alert-info" style="padding:8px 12px;margin-top:6px">
+        🩺 <strong>${name}</strong> — ${dept}
+        <span class="text-sm text-gray"> (ID: ${id})</span>
+      </div>`);
+  },
 
   async saveSchedule() {
+    const doctorId = $('schedule-doctor-id').value;
+    if (!doctorId) { Toast.warning('Search and select a doctor first'); return; }
     const data = serializeForm('schedule-form');
-    if (!data.doctor_id || !data.work_date) { Toast.warning('Fill required fields'); return; }
-    const res = await Api.post(`/doctors/${data.doctor_id}/schedule`, {
-      work_date: data.work_date,
-      start_time: data.start_time,
-      end_time: data.end_time,
-      slot_duration_min: data.slot_duration_min||30,
+    if (!data.work_date) { Toast.warning('Select a work date'); return; }
+    const res = await Api.post(`/doctors/${doctorId}/schedule`, {
+      work_date:         data.work_date,
+      start_time:        data.start_time || '08:00',
+      end_time:          data.end_time   || '16:00',
+      slot_duration_min: data.slot_duration_min || 30,
     });
     if (res.success) {
       Toast.success(`Schedule created — ${res.slots_created} slots generated`);
       Modal.close('add-schedule-modal');
+      this.load(this.page);
     } else Toast.error(res.message);
   },
 };

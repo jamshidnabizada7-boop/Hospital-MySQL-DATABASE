@@ -84,8 +84,8 @@ router.get('/:id', authenticate, adminOr(ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES
   try {
     const [rows] = await db.query(`
       SELECT a.*, p.First_Name AS p_first, p.Last_Name AS p_last, p.Phone AS p_phone,
-             d.First_Name AS d_first, d.Last_Name AS d_last,
-             dept.Dept_Name, ds.Work_Date, sl.Slot_Start, sl.Slot_End, ds.Doctor_ID
+             d.First_Name AS d_first, d.Last_Name AS d_last, d.Doctor_ID,
+             dept.Dept_Name, ds.Work_Date, sl.Slot_Start, sl.Slot_End, ds.Doctor_ID AS Doctor_ID
       FROM Appointment a
       JOIN Patient          p    ON a.Patient_ID=p.Patient_ID
       JOIN Appointment_Slot sl   ON a.Slot_ID=sl.Slot_ID

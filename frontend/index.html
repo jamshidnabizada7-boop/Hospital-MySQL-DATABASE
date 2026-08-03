@@ -486,17 +486,40 @@
       <button class="close-btn" onclick="Modal.close('add-schedule-modal')">×</button>
     </div>
     <div class="modal-body">
+      <input type="hidden" id="schedule-doctor-id">
       <form id="schedule-form">
-        <div class="form-group"><label class="form-label">Doctor ID *</label><input class="form-control" name="doctor_id" type="number" placeholder="Enter Doctor ID" required></div>
-        <div class="form-group"><label class="form-label">Work Date *</label><input class="form-control" name="work_date" type="date" required></div>
-        <div class="form-row col-2">
-          <div class="form-group"><label class="form-label">Start Time *</label><input class="form-control" name="start_time" type="time" value="08:00" required></div>
-          <div class="form-group"><label class="form-label">End Time *</label><input class="form-control" name="end_time" type="time" value="16:00" required></div>
+        <!-- Doctor search (replaces raw Doctor ID input) -->
+        <div class="form-group" style="position:relative">
+          <label class="form-label">Doctor *</label>
+          <input class="form-control" id="schedule-doctor-search"
+                 placeholder="🔍 Type doctor name…"
+                 oninput="Doctors.searchDoctorForSchedule()"
+                 autocomplete="off">
+          <div id="schedule-doctor-list" class="search-dropdown"></div>
+          <div id="schedule-doctor-display"></div>
         </div>
-        <div class="form-group"><label class="form-label">Slot Duration (minutes)</label>
+        <div class="form-group">
+          <label class="form-label">Work Date *</label>
+          <input class="form-control" name="work_date" type="date" required>
+        </div>
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label">Start Time *</label>
+            <input class="form-control" name="start_time" type="time" value="08:00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Time *</label>
+            <input class="form-control" name="end_time" type="time" value="16:00" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slot Duration (minutes)</label>
           <select class="form-control" name="slot_duration_min">
-            <option value="15">15 min</option><option value="20">20 min</option>
-            <option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option>
+            <option value="15">15 min</option>
+            <option value="20">20 min</option>
+            <option value="30" selected>30 min</option>
+            <option value="45">45 min</option>
+            <option value="60">60 min</option>
           </select>
         </div>
       </form>
@@ -855,30 +878,42 @@
       <button class="close-btn" onclick="Modal.close('new-order-modal')">×</button>
     </div>
     <div class="modal-body">
-      <form id="new-order-form">
-        <div class="form-row col-2">
-          <div class="form-group">
-            <label class="form-label">Appointment ID *</label>
-            <input class="form-control" name="appointment_id" type="number" required placeholder="Enter Appointment ID">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Doctor ID *</label>
-            <input class="form-control" name="doctor_id" type="number" required placeholder="Enter Doctor ID">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Priority</label>
-          <select class="form-control" name="priority">
-            <option value="Routine">Routine</option>
-            <option value="Urgent">Urgent</option>
-            <option value="STAT">STAT</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Notes</label>
-          <textarea class="form-control" name="notes" rows="2" placeholder="Clinical notes…"></textarea>
-        </div>
-      </form>
+      <input type="hidden" id="lab-patient-id">
+      <input type="hidden" id="lab-appointment-id">
+      <input type="hidden" id="lab-doctor-id">
+
+      <!-- Patient search -->
+      <div class="form-group" style="position:relative">
+        <label class="form-label">Patient *</label>
+        <input class="form-control" id="lab-patient-search"
+               placeholder="🔍 Type patient name or phone…"
+               oninput="Laboratory.searchPatient()"
+               autocomplete="off">
+        <div id="lab-patient-list" class="search-dropdown"></div>
+        <div id="lab-patient-display"></div>
+      </div>
+
+      <!-- Appointment dropdown (loads after patient selected) -->
+      <div class="form-group" id="lab-appt-group" style="display:none">
+        <label class="form-label">Appointment *</label>
+        <select class="form-control" id="lab-appt-select" onchange="Laboratory.selectAppointment(this)">
+          <option value="">Select appointment…</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-control" id="lab-order-priority">
+          <option value="Routine">Routine</option>
+          <option value="Urgent">Urgent</option>
+          <option value="STAT">STAT</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-control" id="lab-order-notes" rows="2"
+                  placeholder="Clinical notes…"></textarea>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="Modal.close('new-order-modal')">Cancel</button>

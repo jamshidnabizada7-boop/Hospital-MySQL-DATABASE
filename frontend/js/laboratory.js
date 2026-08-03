@@ -144,20 +144,88 @@ const Laboratory = {
   },
 
   openNewOrder() {
-    resetForm('new-order-form');
+    // Reset all fields
+    $('lab-patient-id').value     = '';
+    $('lab-appointment-id').value = '';
+    $('lab-doctor-id').value      = '';
+    $('lab-patient-search').value = '';
+    $('lab-order-notes').value    = '';
+    $('lab-order-priority').value = 'Routine';
+    setHTML('lab-patient-list', '');
+    setHTML('lab-patient-display', '');
+    setHTML('lab-appt-select', '<option value="">Select appointment…</option>');
+    $('lab-appt-group').style.display = 'none';
     Modal.open('new-order-modal');
   },
 
-  async saveNewOrder() {
-    const data = serializeForm('new-order-form');
-    if (!data.appointment_id || !data.doctor_id) {
-      Toast.warning('Appointment ID and Doctor ID are required'); return;
+  async searchPatient() {
+    const q = $('lab-patient-search').value.trim();
+    if (q.length < 2) { setHTML('lab-patient-list', ''); return; }
+    const res = await Api.getQ('/patients', { search: q, limit: 8 });
+    if (!res.success || !res.data.length) {
+      setHTML('lab-patient-list', `<div class="search-empty">No patients found for "${q}"</div>`); return;
     }
+    const items = res.data.map(p => `
+      <div class="search-item" onclick="Laboratory.selectPatient(${p.Patient_ID},'${p.First_Name} ${p.Last_Name}','${p.Phone}')">
+        <div class="text-bold">${p.First_Name} ${p.Last_Name}</div>
+        <div class="text-sm text-gray">${p.Phone} · ${p.Blood_Group}</div>
+      </div>`).join('');
+    setHTML('lab-patient-list', items);
+  },
+
+  async selectPatient(id, name, phone) {
+    $('lab-patient-id').value     = id;
+    $('lab-patient-search').value = name;
+    setHTML('lab-patient-list', '');
+    setHTML('lab-patient-display', `
+      <div class="alert alert-success" style="padding:8px 12px;margin-top:6px">
+        ✅ <strong>${name}</strong> — ${phone}
+      </div>`);
+
+    // Load this patient's completed appointments
+    const res = await Api.get(`/patients/${id}/appointments`);
+    if (!res.success || !res.data.length) {
+      $('lab-appt-group').style.display = 'none';
+      Toast.warning('No appointments found for this patient'); return;
+    }
+    const completed = res.data.filter(a => a.Appointment_Status === 'Completed' || a.Appointment_Status === 'Scheduled');
+    const opts = completed.map(a =>
+      `<option value="${a.Appointment_ID}" data-doctor="${a.doctor_name}">
+         #${a.Appointment_ID} — ${Fmt.date(a.Work_Date)} — ${a.doctor_name} (${a.Appointment_Status})
+       </option>`
+    ).join('');
+    $('lab-appt-select').innerHTML = `<option value="">Select appointment…</option>${opts}`;
+    $('lab-appt-group').style.display = '';
+  },
+
+  selectAppointment(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    $('lab-appointment-id').value = sel.value;
+    // Doctor is embedded in appointment data — get it from the option text
+    // We need the doctor_id; load appointment detail
+    if (sel.value) {
+      Api.get(`/appointments/${sel.value}`).then(r => {
+        if (r.success) $('lab-doctor-id').value = r.data.Doctor_ID || r.data.d_first;
+      });
+    }
+  },
+
+  async saveNewOrder() {
+    const appt_id  = $('lab-appointment-id').value;
+    const priority = $('lab-order-priority').value;
+    const notes    = $('lab-order-notes').value.trim();
+    if (!appt_id) { Toast.warning('Search and select a patient, then choose an appointment'); return; }
+
+    // Get doctor_id from the appointment
+    const apptRes = await Api.get(`/appointments/${appt_id}`);
+    if (!apptRes.success) { Toast.error('Could not load appointment details'); return; }
+    const doctor_id = apptRes.data.Doctor_ID;
+
     const res = await Api.post('/lab/orders', {
-      appointment_id: data.appointment_id,
-      doctor_id:      data.doctor_id,
-      priority:       data.priority || 'Routine',
-      notes:          data.notes    || '',
+      appointment_id: appt_id,
+      doctor_id,
+      priority,
+      notes,
     });
     if (res.success) {
       Toast.success(`Lab order #${res.order_id} created`);
