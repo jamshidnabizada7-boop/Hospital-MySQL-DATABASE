@@ -1266,183 +1266,171 @@ INSERT INTO Patient(First_Name, Last_Name, Gender, Date_Of_Birth, Blood_Group,
 ('Faisal',    'Popal',      'Male',   '1962-03-18', 'AB+',     '0780000049', 'faisal@mail.com',   '77 Samangan',  'Gul Popal',       '0780000050');
 
 
--- Doctor Schedules (10 doctors x 5 dates = 50 schedule rows, used for 50 slots)
--- Using future-safe relative dates won't work in INSERT; using fixed 2026 dates
+-- Doctor Schedules — using CURDATE() + intervals so dates are always in the future
+-- These 20 schedules are for the sample appointment data below
 INSERT INTO Doctor_Schedule(Doctor_ID, Work_Date, Start_Time, End_Time, Status) VALUES
-(1,'2026-08-04','08:00:00','14:00:00','Available'),
-(1,'2026-08-05','08:00:00','14:00:00','Available'),
-(2,'2026-08-04','09:00:00','15:00:00','Available'),
-(2,'2026-08-06','09:00:00','15:00:00','Available'),
-(3,'2026-08-04','10:00:00','16:00:00','Available'),
-(3,'2026-08-05','10:00:00','16:00:00','Available'),
-(4,'2026-08-04','08:00:00','12:00:00','Available'),
-(4,'2026-08-07','08:00:00','12:00:00','Available'),
-(5,'2026-08-05','11:00:00','17:00:00','Available'),
-(5,'2026-08-06','11:00:00','17:00:00','Available'),
-(6,'2026-08-04','08:00:00','14:00:00','Available'),
-(6,'2026-08-05','08:00:00','14:00:00','Available'),
-(7,'2026-08-06','09:00:00','13:00:00','Available'),
-(7,'2026-08-07','09:00:00','13:00:00','Available'),
-(8,'2026-08-04','10:00:00','14:00:00','Available'),
-(8,'2026-08-05','10:00:00','14:00:00','Available'),
-(9,'2026-08-06','08:00:00','16:00:00','Available'),
-(9,'2026-08-07','08:00:00','16:00:00','Available'),
-(10,'2026-08-04','09:00:00','15:00:00','Available'),
-(10,'2026-08-05','09:00:00','15:00:00','Available');
+(1,  DATE_ADD(CURDATE(), INTERVAL 1  DAY),'08:00:00','14:00:00','Available'),
+(1,  DATE_ADD(CURDATE(), INTERVAL 2  DAY),'08:00:00','14:00:00','Available'),
+(2,  DATE_ADD(CURDATE(), INTERVAL 1  DAY),'09:00:00','15:00:00','Available'),
+(2,  DATE_ADD(CURDATE(), INTERVAL 3  DAY),'09:00:00','15:00:00','Available'),
+(3,  DATE_ADD(CURDATE(), INTERVAL 1  DAY),'10:00:00','16:00:00','Available'),
+(3,  DATE_ADD(CURDATE(), INTERVAL 2  DAY),'10:00:00','16:00:00','Available'),
+(4,  DATE_ADD(CURDATE(), INTERVAL 1  DAY),'08:00:00','12:00:00','Available'),
+(4,  DATE_ADD(CURDATE(), INTERVAL 4  DAY),'08:00:00','12:00:00','Available'),
+(5,  DATE_ADD(CURDATE(), INTERVAL 2  DAY),'11:00:00','17:00:00','Available'),
+(5,  DATE_ADD(CURDATE(), INTERVAL 3  DAY),'11:00:00','17:00:00','Available'),
+(6,  DATE_ADD(CURDATE(), INTERVAL 1  DAY),'08:00:00','14:00:00','Available'),
+(6,  DATE_ADD(CURDATE(), INTERVAL 2  DAY),'08:00:00','14:00:00','Available'),
+(7,  DATE_ADD(CURDATE(), INTERVAL 3  DAY),'09:00:00','13:00:00','Available'),
+(7,  DATE_ADD(CURDATE(), INTERVAL 4  DAY),'09:00:00','13:00:00','Available'),
+(8,  DATE_ADD(CURDATE(), INTERVAL 1  DAY),'10:00:00','14:00:00','Available'),
+(8,  DATE_ADD(CURDATE(), INTERVAL 2  DAY),'10:00:00','14:00:00','Available'),
+(9,  DATE_ADD(CURDATE(), INTERVAL 3  DAY),'08:00:00','16:00:00','Available'),
+(9,  DATE_ADD(CURDATE(), INTERVAL 4  DAY),'08:00:00','16:00:00','Available'),
+(10, DATE_ADD(CURDATE(), INTERVAL 1  DAY),'09:00:00','15:00:00','Available'),
+(10, DATE_ADD(CURDATE(), INTERVAL 2  DAY),'09:00:00','15:00:00','Available');
 
--- Appointment Slots (50 slots: ~2-3 per schedule)
-INSERT INTO Appointment_Slot(Schedule_ID, Slot_Start, Slot_End, Status) VALUES
--- Schedule 1 (Dr.Kamal, Aug 4)
-(1,'08:00:00','08:30:00','Booked'),
-(1,'08:30:00','09:00:00','Booked'),
-(1,'09:00:00','09:30:00','Booked'),
--- Schedule 2 (Dr.Kamal, Aug 5)
-(2,'08:00:00','08:30:00','Open'),
-(2,'08:30:00','09:00:00','Open'),
-(2,'09:00:00','09:30:00','Open'),
--- Schedule 3 (Dr.Layla, Aug 4)
-(3,'09:00:00','09:30:00','Booked'),
-(3,'09:30:00','10:00:00','Booked'),
-(3,'10:00:00','10:30:00','Open'),
--- Schedule 4 (Dr.Layla, Aug 6)
-(4,'09:00:00','09:30:00','Open'),
-(4,'09:30:00','10:00:00','Open'),
--- Schedule 5 (Dr.Omar, Aug 4)
-(5,'10:00:00','10:30:00','Booked'),
-(5,'10:30:00','11:00:00','Booked'),
-(5,'11:00:00','11:30:00','Open'),
--- Schedule 6 (Dr.Omar, Aug 5)
-(6,'10:00:00','10:30:00','Open'),
-(6,'10:30:00','11:00:00','Open'),
-(6,'11:00:00','11:30:00','Open'),
--- Schedule 7 (Dr.Fatima, Aug 4)
-(7,'08:00:00','08:30:00','Booked'),
-(7,'08:30:00','09:00:00','Booked'),
-(7,'09:00:00','09:30:00','Open'),
--- Schedule 8 (Dr.Fatima, Aug 7)
-(8,'08:00:00','08:30:00','Open'),
-(8,'08:30:00','09:00:00','Open'),
--- Schedule 9 (Dr.Rahul, Aug 5)
-(9,'11:00:00','11:30:00','Booked'),
-(9,'11:30:00','12:00:00','Booked'),
-(9,'12:00:00','12:30:00','Open'),
--- Schedule 10 (Dr.Rahul, Aug 6)
-(10,'11:00:00','11:30:00','Open'),
-(10,'11:30:00','12:00:00','Open'),
--- Schedule 11 (Dr.Mariam, Aug 4)
-(11,'08:00:00','08:30:00','Booked'),
-(11,'08:30:00','09:00:00','Booked'),
-(11,'09:00:00','09:30:00','Open'),
--- Schedule 12 (Dr.Mariam, Aug 5)
-(12,'08:00:00','08:30:00','Open'),
-(12,'08:30:00','09:00:00','Open'),
--- Schedule 13 (Dr.Ahmad, Aug 6)
-(13,'09:00:00','09:30:00','Booked'),
-(13,'09:30:00','10:00:00','Open'),
--- Schedule 14 (Dr.Ahmad, Aug 7)
-(14,'09:00:00','09:30:00','Open'),
-(14,'09:30:00','10:00:00','Open'),
--- Schedule 15 (Dr.Zainab, Aug 4)
-(15,'10:00:00','10:30:00','Booked'),
-(15,'10:30:00','11:00:00','Open'),
--- Schedule 16 (Dr.Zainab, Aug 5)
-(16,'10:00:00','10:30:00','Open'),
-(16,'10:30:00','11:00:00','Open'),
--- Schedule 17 (Dr.Sami, Aug 6)
-(17,'08:00:00','08:30:00','Booked'),
-(17,'08:30:00','09:00:00','Booked'),
-(17,'09:00:00','09:30:00','Open'),
--- Schedule 18 (Dr.Sami, Aug 7)
-(18,'08:00:00','08:30:00','Open'),
-(18,'08:30:00','09:00:00','Open'),
--- Schedule 19 (Dr.Parisa, Aug 4)
-(19,'09:00:00','09:30:00','Booked'),
-(19,'09:30:00','10:00:00','Open'),
--- Schedule 20 (Dr.Parisa, Aug 5)
-(20,'09:00:00','09:30:00','Open'),
-(20,'09:30:00','10:00:00','Open');
+-- Generate 30-minute slots for all 20 schedules
+DELIMITER $$
+CREATE PROCEDURE gen_all_slots()
+BEGIN
+  DECLARE done    INT  DEFAULT 0;
+  DECLARE v_sched INT;
+  DECLARE v_start TIME;
+  DECLARE v_end   TIME;
+  DECLARE v_cur   TIME;
+  DECLARE c CURSOR FOR
+    SELECT Schedule_ID, Start_Time, End_Time FROM Doctor_Schedule;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  OPEN c;
+  slot_loop: LOOP
+    FETCH c INTO v_sched, v_start, v_end;
+    IF done THEN LEAVE slot_loop; END IF;
+    SET v_cur = v_start;
+    WHILE ADDTIME(v_cur,'00:30:00') <= v_end DO
+      INSERT IGNORE INTO Appointment_Slot(Schedule_ID, Slot_Start, Slot_End, Status)
+      VALUES(v_sched, v_cur, ADDTIME(v_cur,'00:30:00'), 'Open');
+      SET v_cur = ADDTIME(v_cur,'00:30:00');
+    END WHILE;
+  END LOOP;
+  CLOSE c;
+END$$
+DELIMITER ;
 
+CALL gen_all_slots();
+DROP PROCEDURE IF EXISTS gen_all_slots;
 
--- Appointments (50) — using the Booked slots (slots 1-3,7-8,12-13,18-19,23-24,28-29,33,36,39,42,44-45,49-50)
--- Disable trigger temporarily to insert data without duplicate-slot conflict
+-- Book sample appointments using dynamic slot IDs (1st slot of each schedule for Completed,
+-- 2nd slot of each schedule for Scheduled)
 SET FOREIGN_KEY_CHECKS = 0;
-INSERT INTO Appointment(Patient_ID, Slot_ID, Reason, Appointment_Status) VALUES
-(1,  1,  'Chest pain follow-up',             'Completed'),
-(2,  2,  'Palpitations',                      'Completed'),
-(3,  3,  'Routine checkup',                   'Completed'),
-(4,  7,  'Headache and dizziness',             'Completed'),
-(5,  8,  'Memory issues',                      'Completed'),
-(6,  12, 'Fever in child',                    'Completed'),
-(7,  13, 'Vaccination',                        'Completed'),
-(8,  18, 'Knee pain',                          'Completed'),
-(9,  19, 'Back pain',                          'Completed'),
-(10, 23, 'Skin rash',                          'Completed'),
-(11, 24, 'Acne treatment',                     'Completed'),
-(12, 28, 'Prenatal checkup',                   'Completed'),
-(13, 29, 'Contraception consultation',         'Completed'),
-(14, 33, 'Blurry vision',                      'Completed'),
-(15, 36, 'Ear infection',                      'Completed'),
-(16, 39, 'Abdominal pain',                     'Completed'),
-(17, 42, 'Pre-surgical assessment',            'Completed'),
-(18, 44, 'Fatigue and weakness',               'Completed'),
-(19, 45, 'Diabetes management',                'Completed'),
-(20, 49, 'Hypertension follow-up',             'Completed'),
-(21, 50, 'Thyroid checkup',                    'Completed'),
-(22, 4,  'Annual cardiac screening',           'Scheduled'),
-(23, 5,  'Post-op checkup',                    'Scheduled'),
-(24, 6,  'New patient consultation',           'Scheduled'),
-(25, 9,  'Migraine treatment',                 'Scheduled'),
-(1,  10, 'MRI follow-up',                      'Scheduled'),
-(2,  11, 'Child growth assessment',            'Scheduled'),
-(3,  14, 'Sports injury',                      'Scheduled'),
-(4,  15, 'Physiotherapy advice',               'Scheduled'),
-(5,  16, 'Eczema review',                      'Scheduled'),
-(6,  17, 'Psoriasis treatment',                'Scheduled'),
-(7,  20, 'Fertility consultation',             'Scheduled'),
-(8,  21, 'Eye pain',                           'Scheduled'),
-(9,  22, 'Cataract evaluation',                'Scheduled'),
-(10, 25, 'Hearing loss',                       'Scheduled'),
-(11, 26, 'Tonsillitis',                        'Scheduled'),
-(12, 27, 'Hernia evaluation',                  'Scheduled'),
-(13, 30, 'Appendix follow-up',                 'Scheduled'),
-(14, 31, 'Cholesterol check',                  'Scheduled'),
-(15, 32, 'Diabetes check',                     'Scheduled'),
-(16, 34, 'Cardiac stress test',                'Scheduled'),
-(17, 35, 'Neuropathy review',                  'Scheduled'),
-(18, 37, 'Child immunization',                 'Scheduled'),
-(19, 38, 'Knee replacement consult',           'Scheduled'),
-(20, 40, 'Acne treatment plan',                'Scheduled'),
-(21, 41, 'Gynecology annual exam',             'Scheduled'),
-(22, 43, 'Glaucoma check',                     'Scheduled'),
-(23, 46, 'Surgical wound review',              'Scheduled'),
-(24, 47, 'Anemia management',                  'Scheduled'),
-(25, 48, 'Hypertension checkup',               'Scheduled');
+
+-- Helper: get Nth slot of Mth schedule
+-- Schedule order is 1..20 by Schedule_ID (insertion order above)
+-- Slot position 1 = first 30-min block, 2 = second block, etc.
+
+INSERT INTO Appointment(Patient_ID, Slot_ID, Reason, Appointment_Status)
+SELECT vals.pid, sl.Slot_ID, vals.reason, vals.appt_status
+FROM (
+  -- Completed (slot_pos=1 of schedules 1-21, schedule 20 used twice)
+  SELECT 1  pid,'Chest pain follow-up'         reason,'Completed' appt_status,1 sched_rank,1 slot_pos UNION ALL
+  SELECT 2, 'Palpitations',                           'Completed',2,1 UNION ALL
+  SELECT 3, 'Routine checkup',                        'Completed',3,1 UNION ALL
+  SELECT 4, 'Headache and dizziness',                 'Completed',4,1 UNION ALL
+  SELECT 5, 'Memory issues',                          'Completed',5,1 UNION ALL
+  SELECT 6, 'Fever in child',                         'Completed',6,1 UNION ALL
+  SELECT 7, 'Vaccination',                            'Completed',7,1 UNION ALL
+  SELECT 8, 'Knee pain',                              'Completed',8,1 UNION ALL
+  SELECT 9, 'Back pain',                              'Completed',9,1 UNION ALL
+  SELECT 10,'Skin rash',                              'Completed',10,1 UNION ALL
+  SELECT 11,'Acne treatment',                         'Completed',11,1 UNION ALL
+  SELECT 12,'Prenatal checkup',                       'Completed',12,1 UNION ALL
+  SELECT 13,'Contraception consultation',             'Completed',13,1 UNION ALL
+  SELECT 14,'Blurry vision',                          'Completed',14,1 UNION ALL
+  SELECT 15,'Ear infection',                          'Completed',15,1 UNION ALL
+  SELECT 16,'Abdominal pain',                         'Completed',16,1 UNION ALL
+  SELECT 17,'Pre-surgical assessment',                'Completed',17,1 UNION ALL
+  SELECT 18,'Fatigue and weakness',                   'Completed',18,1 UNION ALL
+  SELECT 19,'Diabetes management',                    'Completed',19,1 UNION ALL
+  SELECT 20,'Hypertension follow-up',                 'Completed',20,1 UNION ALL
+  SELECT 21,'Thyroid checkup',                        'Completed',20,2 UNION ALL
+  -- Scheduled (slot_pos=2 or 3 of various schedules)
+  SELECT 22,'Annual cardiac screening',               'Scheduled',1,2 UNION ALL
+  SELECT 23,'Post-op checkup',                        'Scheduled',2,2 UNION ALL
+  SELECT 24,'New patient consultation',               'Scheduled',3,2 UNION ALL
+  SELECT 25,'Migraine treatment',                     'Scheduled',4,2 UNION ALL
+  SELECT 1, 'MRI follow-up',                          'Scheduled',5,2 UNION ALL
+  SELECT 2, 'Child growth assessment',                'Scheduled',6,2 UNION ALL
+  SELECT 3, 'Sports injury',                          'Scheduled',7,2 UNION ALL
+  SELECT 4, 'Physiotherapy advice',                   'Scheduled',8,2 UNION ALL
+  SELECT 5, 'Eczema review',                          'Scheduled',9,2 UNION ALL
+  SELECT 6, 'Psoriasis treatment',                    'Scheduled',10,2 UNION ALL
+  SELECT 7, 'Fertility consultation',                 'Scheduled',11,2 UNION ALL
+  SELECT 8, 'Eye pain',                               'Scheduled',12,2 UNION ALL
+  SELECT 9, 'Cataract evaluation',                    'Scheduled',13,2 UNION ALL
+  SELECT 10,'Hearing loss',                           'Scheduled',14,2 UNION ALL
+  SELECT 11,'Tonsillitis',                            'Scheduled',15,2 UNION ALL
+  SELECT 12,'Hernia evaluation',                      'Scheduled',16,2 UNION ALL
+  SELECT 13,'Appendix follow-up',                     'Scheduled',17,2 UNION ALL
+  SELECT 14,'Cholesterol check',                      'Scheduled',18,2 UNION ALL
+  SELECT 15,'Diabetes check',                         'Scheduled',19,2 UNION ALL
+  SELECT 16,'Cardiac stress test',                    'Scheduled',20,3 UNION ALL
+  SELECT 17,'Neuropathy review',                      'Scheduled',1,4 UNION ALL
+  SELECT 18,'Child immunization',                     'Scheduled',3,4 UNION ALL
+  SELECT 19,'Knee replacement consult',               'Scheduled',5,4 UNION ALL
+  SELECT 20,'Acne treatment plan',                    'Scheduled',7,4 UNION ALL
+  SELECT 21,'Gynecology annual exam',                 'Scheduled',9,4 UNION ALL
+  SELECT 22,'Glaucoma check',                         'Scheduled',11,4 UNION ALL
+  SELECT 23,'Surgical wound review',                  'Scheduled',13,4 UNION ALL
+  SELECT 24,'Anemia management',                      'Scheduled',15,4 UNION ALL
+  SELECT 25,'Hypertension checkup',                   'Scheduled',17,4
+) vals
+JOIN (
+  SELECT sl.Slot_ID,
+         DENSE_RANK()  OVER (ORDER BY sl.Schedule_ID)                          AS sched_rank,
+         ROW_NUMBER()  OVER (PARTITION BY sl.Schedule_ID ORDER BY sl.Slot_Start) AS slot_pos
+  FROM   Appointment_Slot sl
+) sl ON sl.sched_rank = vals.sched_rank AND sl.slot_pos = vals.slot_pos;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- Sync slot statuses after bulk insert
+UPDATE Appointment_Slot sl
+JOIN Appointment a ON a.Slot_ID = sl.Slot_ID
+SET sl.Status = CASE
+  WHEN a.Appointment_Status = 'Completed'              THEN 'Completed'
+  WHEN a.Appointment_Status = 'Scheduled'              THEN 'Booked'
+  WHEN a.Appointment_Status IN ('Cancelled','No_Show') THEN 'Open'
+  ELSE 'Booked'
+END;
 
--- Medical Records (for the 21 completed appointments)
-INSERT INTO Medical_Record(Appointment_ID, Diagnosis, Treatment, Visit_Notes, Follow_Up_Date) VALUES
-(1,  'Stable angina',                    'Nitrates prescribed',             'Patient reports improvement',         '2026-09-04'),
-(2,  'Atrial fibrillation',              'Beta-blockers initiated',         'ECG performed, results normal',        '2026-09-05'),
-(3,  'Upper respiratory infection',      'Antibiotics and rest',            'Child showed mild fever',              NULL),
-(4,  'Tension headache',                 'NSAIDs and lifestyle change',     'MRI recommended',                      '2026-09-06'),
-(5,  'Mild cognitive impairment',        'Cognitive therapy referral',      'Memory tests administered',            '2026-10-06'),
-(6,  'Viral fever',                      'Antipyretics and fluids',         'Temperature 38.5C on arrival',         NULL),
-(7,  'Completed vaccination schedule',   'MMR, Hepatitis B given',          'No adverse reactions observed',        '2026-11-07'),
-(8,  'Osteoarthritis right knee',        'Physiotherapy ordered',           'X-ray shows moderate degeneration',   '2026-09-08'),
-(9,  'Lumbar disc herniation',           'Pain management, MRI ordered',   'Severe L4-L5 involvement',             '2026-09-09'),
-(10, 'Contact dermatitis',               'Topical steroids prescribed',     'Allergen identified as nickel',        '2026-09-10'),
-(11, 'Moderate acne vulgaris',           'Topical retinoid and antibiotic', 'Sebaceous gland hyperactivity',        '2026-10-11'),
-(12, '28-week prenatal visit',           'Iron and folate supplements',     'Fetal heartbeat normal 142bpm',        '2026-09-12'),
-(13, 'OCP initiation',                   'Oral contraceptive pill started', 'Blood pressure within normal range',   '2026-09-13'),
-(14, 'Myopia -2.5 diopters',             'Corrective lenses prescribed',    'Refraction test performed',            '2027-02-14'),
-(15, 'Otitis media',                     'Amoxicillin 500mg course',        'Tympanic membrane inflamed',           '2026-08-25'),
-(16, 'Appendicitis suspected',           'CT scan ordered, nil by mouth',   'WBC elevated at 14000',                '2026-08-06'),
-(17, 'Inguinal hernia',                  'Surgical repair scheduled',       'Reducible hernia identified',          '2026-08-18'),
-(18, 'Iron-deficiency anemia',           'Ferrous sulfate 200mg TDS',       'Hb 8.5 g/dL',                         '2026-09-18'),
-(19, 'Type 2 diabetes mellitus',         'Metformin 500mg BD, diet plan',   'HbA1c 8.2%',                          '2026-09-19'),
-(20, 'Essential hypertension',           'Amlodipine 5mg OD',               'BP 158/96 on arrival',                '2026-09-20'),
-(21, 'Hypothyroidism',                   'Levothyroxine 50mcg OD',          'TSH 7.8 mIU/L',                       '2026-09-21');
+
+-- Medical Records — reference appointments dynamically by patient+reason
+INSERT INTO Medical_Record(Appointment_ID, Diagnosis, Treatment, Visit_Notes, Follow_Up_Date)
+SELECT a.Appointment_ID, mr.diag, mr.treat, mr.notes, mr.followup
+FROM (
+  SELECT 1  pid,'Chest pain follow-up'         reason,'Stable angina'               diag,'Nitrates prescribed'             treat,'Patient reports improvement'        notes,DATE_ADD(CURDATE(),INTERVAL 34 DAY) followup UNION ALL
+  SELECT 2, 'Palpitations',                           'Atrial fibrillation',              'Beta-blockers initiated',             'ECG performed, results normal',         DATE_ADD(CURDATE(),INTERVAL 35 DAY) UNION ALL
+  SELECT 3, 'Routine checkup',                        'Upper respiratory infection',       'Antibiotics and rest',                'Child showed mild fever',               NULL UNION ALL
+  SELECT 4, 'Headache and dizziness',                 'Tension headache',                  'NSAIDs and lifestyle change',         'MRI recommended',                       DATE_ADD(CURDATE(),INTERVAL 36 DAY) UNION ALL
+  SELECT 5, 'Memory issues',                          'Mild cognitive impairment',         'Cognitive therapy referral',          'Memory tests administered',             DATE_ADD(CURDATE(),INTERVAL 66 DAY) UNION ALL
+  SELECT 6, 'Fever in child',                         'Viral fever',                       'Antipyretics and fluids',             'Temperature 38.5C on arrival',          NULL UNION ALL
+  SELECT 7, 'Vaccination',                            'Completed vaccination schedule',    'MMR, Hepatitis B given',              'No adverse reactions observed',         DATE_ADD(CURDATE(),INTERVAL 100 DAY) UNION ALL
+  SELECT 8, 'Knee pain',                              'Osteoarthritis right knee',         'Physiotherapy ordered',               'X-ray shows moderate degeneration',    DATE_ADD(CURDATE(),INTERVAL 38 DAY) UNION ALL
+  SELECT 9, 'Back pain',                              'Lumbar disc herniation',            'Pain management, MRI ordered',        'Severe L4-L5 involvement',             DATE_ADD(CURDATE(),INTERVAL 39 DAY) UNION ALL
+  SELECT 10,'Skin rash',                              'Contact dermatitis',                'Topical steroids prescribed',         'Allergen identified as nickel',         DATE_ADD(CURDATE(),INTERVAL 40 DAY) UNION ALL
+  SELECT 11,'Acne treatment',                         'Moderate acne vulgaris',            'Topical retinoid and antibiotic',     'Sebaceous gland hyperactivity',         DATE_ADD(CURDATE(),INTERVAL 70 DAY) UNION ALL
+  SELECT 12,'Prenatal checkup',                       '28-week prenatal visit',            'Iron and folate supplements',         'Fetal heartbeat normal 142bpm',         DATE_ADD(CURDATE(),INTERVAL 41 DAY) UNION ALL
+  SELECT 13,'Contraception consultation',             'OCP initiation',                    'Oral contraceptive pill started',     'Blood pressure within normal range',    DATE_ADD(CURDATE(),INTERVAL 42 DAY) UNION ALL
+  SELECT 14,'Blurry vision',                          'Myopia -2.5 diopters',              'Corrective lenses prescribed',        'Refraction test performed',             DATE_ADD(CURDATE(),INTERVAL 196 DAY) UNION ALL
+  SELECT 15,'Ear infection',                          'Otitis media',                      'Amoxicillin 500mg course',            'Tympanic membrane inflamed',            DATE_ADD(CURDATE(),INTERVAL 24 DAY) UNION ALL
+  SELECT 16,'Abdominal pain',                         'Appendicitis suspected',            'CT scan ordered, nil by mouth',       'WBC elevated at 14000',                 DATE_ADD(CURDATE(),INTERVAL 5 DAY) UNION ALL
+  SELECT 17,'Pre-surgical assessment',                'Inguinal hernia',                   'Surgical repair scheduled',           'Reducible hernia identified',           DATE_ADD(CURDATE(),INTERVAL 17 DAY) UNION ALL
+  SELECT 18,'Fatigue and weakness',                   'Iron-deficiency anemia',            'Ferrous sulfate 200mg TDS',           'Hb 8.5 g/dL',                          DATE_ADD(CURDATE(),INTERVAL 48 DAY) UNION ALL
+  SELECT 19,'Diabetes management',                    'Type 2 diabetes mellitus',          'Metformin 500mg BD, diet plan',       'HbA1c 8.2%',                           DATE_ADD(CURDATE(),INTERVAL 49 DAY) UNION ALL
+  SELECT 20,'Hypertension follow-up',                 'Essential hypertension',            'Amlodipine 5mg OD',                   'BP 158/96 on arrival',                  DATE_ADD(CURDATE(),INTERVAL 50 DAY) UNION ALL
+  SELECT 21,'Thyroid checkup',                        'Hypothyroidism',                    'Levothyroxine 50mcg OD',              'TSH 7.8 mIU/L',                        DATE_ADD(CURDATE(),INTERVAL 51 DAY)
+) mr
+JOIN Appointment a ON a.Patient_ID=mr.pid AND a.Reason=mr.reason AND a.Appointment_Status='Completed';
 
 
 -- Medicine Categories
@@ -1511,51 +1499,61 @@ INSERT INTO Inventory(Pharmacy_ID, Medicine_ID, Quantity_In_Stock, Reorder_Level
 (2, 20,   70, 10, 'BATCH-B010', '2027-04-30',  16.00);
 
 
--- Prescriptions (20)
-INSERT INTO Prescription(Record_ID, Prescription_Date, Notes) VALUES
-(1,  '2026-08-04', 'Take with food'),
-(2,  '2026-08-04', 'Avoid alcohol'),
-(3,  '2026-08-04', 'Rest and fluids'),
-(4,  '2026-08-04', 'Take with water'),
-(6,  '2026-08-04', 'Fever management'),
-(8,  '2026-08-04', 'Post-physio medication'),
-(9,  '2026-08-04', 'Strict bed rest required'),
-(10, '2026-08-04', 'Avoid known allergens'),
-(11, '2026-08-04', 'Apply thinly at night'),
-(12, '2026-08-04', 'Take daily as directed'),
-(13, '2026-08-04', 'One tablet daily'),
-(15, '2026-08-04', 'Complete full antibiotic course'),
-(16, '2026-08-04', 'NIL BY MOUTH post-midnight'),
-(18, '2026-08-04', 'Take iron with orange juice'),
-(19, '2026-08-04', 'Monitor blood glucose daily'),
-(20, '2026-08-04', 'Low sodium diet'),
-(21, '2026-08-04', 'Take on empty stomach'),
-(5,  '2026-08-04', 'Cognitive exercises daily'),
-(7,  '2026-08-04', 'Monitor for vaccine reactions'),
-(17, '2026-08-04', 'Pre-operative preparation');
+-- Prescriptions — linked to Medical Records by appointment patient+reason
+INSERT INTO Prescription(Record_ID, Prescription_Date, Notes)
+SELECT mr.Record_ID, CURDATE(), pdata.notes
+FROM (
+  SELECT 1 pid,'Chest pain follow-up' reason,'Take with food' notes UNION ALL
+  SELECT 2,'Palpitations','Avoid alcohol' UNION ALL
+  SELECT 3,'Routine checkup','Rest and fluids' UNION ALL
+  SELECT 4,'Headache and dizziness','Take with water' UNION ALL
+  SELECT 6,'Fever in child','Fever management' UNION ALL
+  SELECT 8,'Knee pain','Post-physio medication' UNION ALL
+  SELECT 9,'Back pain','Strict bed rest required' UNION ALL
+  SELECT 10,'Skin rash','Avoid known allergens' UNION ALL
+  SELECT 11,'Acne treatment','Apply thinly at night' UNION ALL
+  SELECT 12,'Prenatal checkup','Take daily as directed' UNION ALL
+  SELECT 13,'Contraception consultation','One tablet daily' UNION ALL
+  SELECT 15,'Ear infection','Complete full antibiotic course' UNION ALL
+  SELECT 16,'Abdominal pain','NIL BY MOUTH post-midnight' UNION ALL
+  SELECT 18,'Fatigue and weakness','Take iron with orange juice' UNION ALL
+  SELECT 19,'Diabetes management','Monitor blood glucose daily' UNION ALL
+  SELECT 20,'Hypertension follow-up','Low sodium diet' UNION ALL
+  SELECT 21,'Thyroid checkup','Take on empty stomach' UNION ALL
+  SELECT 5,'Memory issues','Cognitive exercises daily' UNION ALL
+  SELECT 7,'Vaccination','Monitor for vaccine reactions' UNION ALL
+  SELECT 17,'Pre-surgical assessment','Pre-operative preparation'
+) pdata
+JOIN Appointment a  ON a.Patient_ID=pdata.pid AND a.Reason=pdata.reason AND a.Appointment_Status='Completed'
+JOIN Medical_Record mr ON mr.Appointment_ID=a.Appointment_ID;
 
--- Prescription Items (20) — 1 per prescription for clarity (can have multiple in real use)
-INSERT INTO Prescription_Item(Prescription_ID, Medicine_ID, Dosage, Frequency, Duration_Days, Instructions) VALUES
-(1,  19, '10mg',    'Twice daily',  30, 'Sublingual for chest pain'),
-(2,  6,  '5mg',     'Once daily',   90, 'Monitor heart rate'),
-(3,  4,  '500mg',   'Three times daily', 5, 'After meals'),
-(4,  3,  '400mg',   'Twice daily',  5,  'With food'),
-(5,  4,  '500mg',   'Every 6 hours',3,  'For fever above 38.5'),
-(6,  3,  '400mg',   'Three times daily', 7,'After physiotherapy'),
-(7,  20, '50mg',    'Twice daily',  7,  'With food, avoid driving'),
-(8,  13, '0.1%',    'Twice daily',  14, 'Apply thin layer on affected area'),
-(9,  14, '0.025%',  'Once at night',42, 'Avoid sun exposure'),
-(10, 12, '5mg',     'Once daily',   30, 'Folic acid supplement'),
-(11, 5,  '5mg',     'Once daily',   30, 'Monitor blood pressure'),
-(12, 1,  '500mg',   'Three times daily', 7,'Complete the full course'),
-(13, 17, '20mg',    'Once daily',   14, 'Before breakfast'),
-(14, 11, '325mg',   'Twice daily',  60, 'With Vitamin C'),
-(15, 7,  '500mg',   'Twice daily',  90, 'Monitor glucose levels'),
-(16, 5,  '5mg',     'Once daily',   60, 'Salt restriction diet'),
-(17, 9,  '50mcg',   'Once daily',   90, 'Morning empty stomach'),
-(18, 10, '10mg',    'Once at night',30, 'Antihistamine for allergy'),
-(19, 4,  '500mg',   'As needed',    14, 'For pain relief'),
-(20, 17, '20mg',    'Once daily',   30, 'Omeprazole for GI protection');
+-- Prescription Items (20) — linked dynamically via prescription order
+INSERT INTO Prescription_Item(Prescription_ID,Medicine_ID,Dosage,Frequency,Duration_Days,Instructions)
+SELECT pr.Prescription_ID, pi.med_id, pi.dosage, pi.freq, pi.dur, pi.instr
+FROM (
+  SELECT 1 pnum,19 med_id,'10mg' dosage,'Twice daily' freq,30 dur,'Sublingual for chest pain' instr UNION ALL
+  SELECT 2,6,'5mg','Once daily',90,'Monitor heart rate' UNION ALL
+  SELECT 3,4,'500mg','Three times daily',5,'After meals' UNION ALL
+  SELECT 4,3,'400mg','Twice daily',5,'With food' UNION ALL
+  SELECT 5,4,'500mg','Every 6 hours',3,'For fever above 38.5' UNION ALL
+  SELECT 6,3,'400mg','Three times daily',7,'After physiotherapy' UNION ALL
+  SELECT 7,20,'50mg','Twice daily',7,'With food, avoid driving' UNION ALL
+  SELECT 8,13,'0.1%','Twice daily',14,'Apply thin layer on affected area' UNION ALL
+  SELECT 9,14,'0.025%','Once at night',42,'Avoid sun exposure' UNION ALL
+  SELECT 10,12,'5mg','Once daily',30,'Folic acid supplement' UNION ALL
+  SELECT 11,5,'5mg','Once daily',30,'Monitor blood pressure' UNION ALL
+  SELECT 12,1,'500mg','Three times daily',7,'Complete the full course' UNION ALL
+  SELECT 13,17,'20mg','Once daily',14,'Before breakfast' UNION ALL
+  SELECT 14,11,'325mg','Twice daily',60,'With Vitamin C' UNION ALL
+  SELECT 15,7,'500mg','Twice daily',90,'Monitor glucose levels' UNION ALL
+  SELECT 16,5,'5mg','Once daily',60,'Salt restriction diet' UNION ALL
+  SELECT 17,9,'50mcg','Once daily',90,'Morning empty stomach' UNION ALL
+  SELECT 18,10,'10mg','Once at night',30,'Antihistamine for allergy' UNION ALL
+  SELECT 19,4,'500mg','As needed',14,'For pain relief' UNION ALL
+  SELECT 20,17,'20mg','Once daily',30,'Omeprazole for GI protection'
+) pi
+JOIN (SELECT Prescription_ID, ROW_NUMBER() OVER (ORDER BY Prescription_ID) AS pnum FROM Prescription) pr
+  ON pr.pnum = pi.pnum;
 
 
 -- Lab Tests
@@ -1571,101 +1569,119 @@ INSERT INTO Lab_Test(Test_Name, Test_Code, Category, Normal_Range, Unit, Price, 
 ('ECG',                          'ECG',      'Cardiology',   'Normal sinus',     '',       400.00, 1),
 ('Chest X-Ray',                  'CXR',      'Radiology',    'Clear lungs',      '',       600.00, 2);
 
--- Lab Orders (20)
-INSERT INTO Lab_Order(Appointment_ID, Doctor_ID, Priority, Status, Notes) VALUES
-(1,  1, 'Routine', 'Completed', 'Pre-cardiac evaluation'),
-(2,  1, 'Urgent',  'Completed', 'Arrhythmia workup'),
-(4,  2, 'Routine', 'Completed', 'Headache investigation'),
-(5,  2, 'Routine', 'Completed', 'Cognitive workup'),
-(8,  4, 'Routine', 'Completed', 'Bone density baseline'),
-(9,  4, 'Urgent',  'Completed', 'Spine imaging'),
-(10, 5, 'Routine', 'Completed', 'Allergy panel'),
-(12, 6, 'Routine', 'Completed', 'Prenatal labs'),
-(15, 8, 'Routine', 'Completed', 'Ear infection labs'),
-(16, 9, 'STAT',    'Completed', 'Acute abdomen labs'),
-(18, 10,'Routine', 'Completed', 'Anemia panel'),
-(19, 10,'Routine', 'Completed', 'Diabetes panel'),
-(20, 10,'Routine', 'Completed', 'Hypertension labs'),
-(21, 10,'Routine', 'Completed', 'Thyroid panel'),
-(22, 1, 'Routine', 'Pending',   'Annual cardiac screening'),
-(23, 1, 'Routine', 'Pending',   'Post-op follow up labs'),
-(25, 2, 'Urgent',  'In_Progress','Migraine neuro panel'),
-(31, 5, 'Routine', 'Pending',   'Psoriasis baseline'),
-(41, 1, 'Routine', 'Pending',   'Cardiac risk screening'),
-(49, 10,'Routine', 'Pending',   'BP medication labs');
+-- Lab Orders (20) — completed ones reference completed appointments, pending ones reference scheduled
+INSERT INTO Lab_Order(Appointment_ID, Doctor_ID, Priority, Status, Notes)
+SELECT a.Appointment_ID, lo.doc_id, lo.priority, lo.status, lo.notes
+FROM (
+  SELECT 1 pid,'Chest pain follow-up'    reason, 1 doc_id,'Routine'  priority,'Completed'   status,'Pre-cardiac evaluation'     notes UNION ALL
+  SELECT 2,'Palpitations',                         1,'Urgent',  'Completed','Arrhythmia workup'           UNION ALL
+  SELECT 4,'Headache and dizziness',               2,'Routine', 'Completed','Headache investigation'       UNION ALL
+  SELECT 5,'Memory issues',                        2,'Routine', 'Completed','Cognitive workup'             UNION ALL
+  SELECT 8,'Knee pain',                            4,'Routine', 'Completed','Bone density baseline'        UNION ALL
+  SELECT 9,'Back pain',                            4,'Urgent',  'Completed','Spine imaging'                UNION ALL
+  SELECT 10,'Skin rash',                           5,'Routine', 'Completed','Allergy panel'                UNION ALL
+  SELECT 12,'Prenatal checkup',                    6,'Routine', 'Completed','Prenatal labs'                UNION ALL
+  SELECT 15,'Ear infection',                       8,'Routine', 'Completed','Ear infection labs'           UNION ALL
+  SELECT 16,'Abdominal pain',                      9,'STAT',    'Completed','Acute abdomen labs'           UNION ALL
+  SELECT 18,'Fatigue and weakness',               10,'Routine', 'Completed','Anemia panel'                 UNION ALL
+  SELECT 19,'Diabetes management',                10,'Routine', 'Completed','Diabetes panel'               UNION ALL
+  SELECT 20,'Hypertension follow-up',             10,'Routine', 'Completed','Hypertension labs'            UNION ALL
+  SELECT 21,'Thyroid checkup',                    10,'Routine', 'Completed','Thyroid panel'                UNION ALL
+  SELECT 22,'Annual cardiac screening',            1,'Routine', 'Pending',  'Annual cardiac screening'     UNION ALL
+  SELECT 23,'Post-op checkup',                     1,'Routine', 'Pending',  'Post-op follow up labs'       UNION ALL
+  SELECT 25,'Migraine treatment',                  2,'Urgent',  'In_Progress','Migraine neuro panel'       UNION ALL
+  SELECT 6, 'Psoriasis treatment',                 5,'Routine', 'Pending',  'Psoriasis baseline'           UNION ALL
+  SELECT 16,'Cardiac stress test',                 1,'Routine', 'Pending',  'Cardiac risk screening'       UNION ALL
+  SELECT 25,'Hypertension checkup',               10,'Routine', 'Pending',  'BP medication labs'
+) lo
+JOIN Appointment a ON a.Patient_ID=lo.pid AND a.Reason=lo.reason;
 
 
--- Lab Results (20)
-INSERT INTO Lab_Result(Order_ID, Test_ID, Result, Is_Abnormal, Remarks, Performed_By) VALUES
-(1,  9,  'Normal sinus rhythm, HR 72',              0, 'No significant findings',       2),
-(2,  1,  'WBC 14.2, RBC 4.1, PLT 210',              1, 'Elevated WBC - investigate',    2),
-(3,  1,  'WBC 8.5, RBC 4.8, PLT 280',               0, 'Within normal limits',          12),
-(4,  3,  'HbA1c 7.9%',                              1, 'Above target, adjust therapy',  12),
-(5,  1,  'CBC Normal',                               0, 'No anemia',                     2),
-(6,  7,  'Creatinine 0.9, BUN 18',                  0, 'Kidney function normal',         12),
-(7,  1,  'Eosinophils elevated at 8%',              1, 'Allergic response indicated',    2),
-(8,  1,  'Hb 11.2, normal differential',            1, 'Mild anemia of pregnancy',       2),
-(9,  8,  'Cloudy urine, WBC 15/HPF',                1, 'Possible UTI',                  12),
-(10, 1,  'WBC 16.5, Neutrophils 85%',               1, 'Infection/Appendicitis likely',  2),
-(11, 1,  'Hb 8.5, MCV 72, MCH 24',                 1, 'Iron deficiency anemia',         12),
-(12, 2,  'FBG 148 mg/dL',                           1, 'Impaired fasting glucose',       2),
-(13, 3,  'HbA1c 8.2%',                              1, 'Poor glycemic control',          12),
-(14, 4,  'TSH 7.8 mIU/L',                           1, 'Hypothyroidism confirmed',       2),
-(15, 5,  'Total Chol 195, LDL 125, HDL 48',         0, 'Within acceptable range',        12),
-(16, 6,  'ALT 35, AST 28, Bilirubin 0.8',           0, 'Liver function normal',          2),
-(17, 7,  'Creatinine 1.0, eGFR 85',                 0, 'Kidney function preserved',      12),
-(18, 4,  'TSH 2.5 mIU/L',                           0, 'Euthyroid',                      2),
-(19, 9,  'Left ventricular hypertrophy noted',      1, 'Consistent with hypertension',   2),
-(20, 2,  'FBG 182 mg/dL',                           1, 'Hyperglycemia, review meds',     12);
+-- Lab Results (20) — reference lab orders by position
+INSERT INTO Lab_Result(Order_ID, Test_ID, Result, Is_Abnormal, Remarks, Performed_By)
+SELECT lo.Order_ID, lr.test_id, lr.result, lr.abnormal, lr.remarks, lr.performed_by
+FROM (
+  SELECT 1 onum,9 test_id,'Normal sinus rhythm, HR 72'         result,0 abnormal,'No significant findings'       remarks,2 performed_by UNION ALL
+  SELECT 2,1,'WBC 14.2, RBC 4.1, PLT 210',                    1,'Elevated WBC - investigate',    2 UNION ALL
+  SELECT 3,1,'WBC 8.5, RBC 4.8, PLT 280',                     0,'Within normal limits',          12 UNION ALL
+  SELECT 4,3,'HbA1c 7.9%',                                    1,'Above target, adjust therapy',  12 UNION ALL
+  SELECT 5,1,'CBC Normal',                                     0,'No anemia',                     2 UNION ALL
+  SELECT 6,7,'Creatinine 0.9, BUN 18',                        0,'Kidney function normal',         12 UNION ALL
+  SELECT 7,1,'Eosinophils elevated at 8%',                    1,'Allergic response indicated',    2 UNION ALL
+  SELECT 8,1,'Hb 11.2, normal differential',                  1,'Mild anemia of pregnancy',       2 UNION ALL
+  SELECT 9,8,'Cloudy urine, WBC 15/HPF',                      1,'Possible UTI',                  12 UNION ALL
+  SELECT 10,1,'WBC 16.5, Neutrophils 85%',                    1,'Infection/Appendicitis likely',  2 UNION ALL
+  SELECT 11,1,'Hb 8.5, MCV 72, MCH 24',                      1,'Iron deficiency anemia',         12 UNION ALL
+  SELECT 12,2,'FBG 148 mg/dL',                                1,'Impaired fasting glucose',       2 UNION ALL
+  SELECT 13,3,'HbA1c 8.2%',                                   1,'Poor glycemic control',          12 UNION ALL
+  SELECT 14,4,'TSH 7.8 mIU/L',                               1,'Hypothyroidism confirmed',       2 UNION ALL
+  SELECT 15,5,'Total Chol 195, LDL 125, HDL 48',             0,'Within acceptable range',        12 UNION ALL
+  SELECT 16,6,'ALT 35, AST 28, Bilirubin 0.8',               0,'Liver function normal',          2 UNION ALL
+  SELECT 17,7,'Creatinine 1.0, eGFR 85',                     0,'Kidney function preserved',      12 UNION ALL
+  SELECT 18,4,'TSH 2.5 mIU/L',                               0,'Euthyroid',                      2 UNION ALL
+  SELECT 19,9,'Left ventricular hypertrophy noted',           1,'Consistent with hypertension',   2 UNION ALL
+  SELECT 20,2,'FBG 182 mg/dL',                               1,'Hyperglycemia, review meds',     12
+) lr
+JOIN (SELECT Order_ID, ROW_NUMBER() OVER (ORDER BY Order_ID) AS onum FROM Lab_Order) lo
+  ON lo.onum = lr.onum;
 
 
--- Bills (20) - for the first 20 completed appointments
+-- Bills (20) — linked to completed appointments dynamically
 INSERT INTO Bill(Appointment_ID, Bill_Date, Consultation_Fee, Medicine_Fee, Lab_Fee,
-                 Other_Fee, Discount, Tax, Total_Amount, Amount_Paid, Balance_Due, Bill_Status) VALUES
-(1,  '2026-08-04', 1500.00, 320.00, 400.00,  50.00,  0.00,  113.50, 2383.50, 2383.50,    0.00, 'Paid'),
-(2,  '2026-08-04', 1500.00, 220.00, 500.00,  50.00,  0.00,  113.50, 2383.50, 1500.00,  883.50, 'Partial'),
-(3,  '2026-08-04', 1000.00, 150.00, 200.00,  30.00,  0.00,   69.00, 1449.00, 1449.00,    0.00, 'Paid'),
-(4,  '2026-08-04', 1400.00, 100.00, 500.00,  50.00,  0.00,  102.50, 2152.50, 2152.50,    0.00, 'Paid'),
-(5,  '2026-08-04', 1400.00, 140.00, 700.00,  50.00, 50.00,  112.00, 2352.00,    0.00, 2352.00, 'Pending'),
-(6,  '2026-08-04', 1000.00, 120.00, 150.00,  30.00,  0.00,   65.00, 1365.00, 1365.00,    0.00, 'Paid'),
-(7,  '2026-08-04', 1000.00,   0.00, 200.00,  30.00,  0.00,   57.50, 1287.50, 1287.50,    0.00, 'Paid'),
-(8,  '2026-08-04', 1300.00, 150.00, 850.00,  50.00,  0.00,  117.50, 2467.50,    0.00, 2467.50, 'Pending'),
-(9,  '2026-08-04', 1300.00, 400.00, 850.00,  50.00,  0.00,  130.00, 2730.00, 1000.00, 1730.00, 'Partial'),
-(10, '2026-08-04',  900.00, 500.00, 150.00,  50.00,  0.00,   80.00, 1680.00, 1680.00,    0.00, 'Paid'),
-(11, '2026-08-04',  900.00, 700.00, 100.00,  50.00,  0.00,   87.50, 1837.50, 1837.50,    0.00, 'Paid'),
-(12, '2026-08-04', 1200.00, 160.00, 500.00,  50.00,  0.00,   96.50, 2026.50,    0.00, 2026.50, 'Pending'),
-(13, '2026-08-04', 1200.00,  60.00, 200.00,  30.00,  0.00,   74.50, 1564.50, 1564.50,    0.00, 'Paid'),
-(14, '2026-08-04', 1100.00, 300.00, 600.00,  50.00,  0.00,  102.50, 2152.50, 2152.50,    0.00, 'Paid'),
-(15, '2026-08-04',  850.00, 300.00, 150.00,  30.00,  0.00,   66.50, 1396.50,    0.00, 1396.50, 'Pending'),
-(16, '2026-08-04', 1600.00, 170.00, 900.00, 100.00,  0.00,  138.50, 2908.50, 2908.50,    0.00, 'Paid'),
-(17, '2026-08-04', 1600.00, 170.00, 850.00, 100.00,  0.00,  136.00, 2856.00, 2856.00,    0.00, 'Paid'),
-(18, '2026-08-04', 1050.00, 180.00, 850.00,  50.00,  0.00,  107.50, 2237.50, 2237.50,    0.00, 'Paid'),
-(19, '2026-08-04', 1050.00, 200.00, 800.00,  50.00,  0.00,  105.00, 2205.00, 2205.00,    0.00, 'Paid'),
-(20, '2026-08-04', 1050.00, 180.00, 500.00,  50.00,  0.00,   89.00, 1869.00, 1869.00,    0.00, 'Paid');
+                 Other_Fee, Discount, Tax, Total_Amount, Amount_Paid, Balance_Due, Bill_Status)
+SELECT a.Appointment_ID, CURDATE(),
+       bdata.cf, bdata.mf, bdata.lf, bdata.othf, bdata.disc, bdata.tax, bdata.total, bdata.paid, bdata.balance, bdata.bstatus
+FROM (
+  SELECT 1 pid,'Chest pain follow-up'       reason,1500.00 cf,320.00 mf,400.00 lf,50.00 othf,0.00 disc,113.50 tax,2383.50 total,2383.50 paid,0.00 balance,'Paid' bstatus UNION ALL
+  SELECT 2,'Palpitations',                         1500.00,220.00,500.00,50.00,0.00,113.50,2383.50,1500.00,883.50,'Partial' UNION ALL
+  SELECT 3,'Routine checkup',                      1000.00,150.00,200.00,30.00,0.00,69.00,1449.00,1449.00,0.00,'Paid' UNION ALL
+  SELECT 4,'Headache and dizziness',               1400.00,100.00,500.00,50.00,0.00,102.50,2152.50,2152.50,0.00,'Paid' UNION ALL
+  SELECT 5,'Memory issues',                        1400.00,140.00,700.00,50.00,50.00,112.00,2352.00,0.00,2352.00,'Pending' UNION ALL
+  SELECT 6,'Fever in child',                       1000.00,120.00,150.00,30.00,0.00,65.00,1365.00,1365.00,0.00,'Paid' UNION ALL
+  SELECT 7,'Vaccination',                          1000.00,0.00,200.00,30.00,0.00,57.50,1287.50,1287.50,0.00,'Paid' UNION ALL
+  SELECT 8,'Knee pain',                            1300.00,150.00,850.00,50.00,0.00,117.50,2467.50,0.00,2467.50,'Pending' UNION ALL
+  SELECT 9,'Back pain',                            1300.00,400.00,850.00,50.00,0.00,130.00,2730.00,1000.00,1730.00,'Partial' UNION ALL
+  SELECT 10,'Skin rash',                           900.00,500.00,150.00,50.00,0.00,80.00,1680.00,1680.00,0.00,'Paid' UNION ALL
+  SELECT 11,'Acne treatment',                      900.00,700.00,100.00,50.00,0.00,87.50,1837.50,1837.50,0.00,'Paid' UNION ALL
+  SELECT 12,'Prenatal checkup',                    1200.00,160.00,500.00,50.00,0.00,96.50,2006.50,0.00,2006.50,'Pending' UNION ALL
+  SELECT 13,'Contraception consultation',          1200.00,60.00,200.00,30.00,0.00,74.50,1564.50,1564.50,0.00,'Paid' UNION ALL
+  SELECT 14,'Blurry vision',                       1100.00,300.00,600.00,50.00,0.00,102.50,2152.50,2152.50,0.00,'Paid' UNION ALL
+  SELECT 15,'Ear infection',                       850.00,300.00,150.00,30.00,0.00,66.50,1396.50,0.00,1396.50,'Pending' UNION ALL
+  SELECT 16,'Abdominal pain',                      1600.00,170.00,900.00,100.00,0.00,138.50,2908.50,2908.50,0.00,'Paid' UNION ALL
+  SELECT 17,'Pre-surgical assessment',             1600.00,170.00,850.00,100.00,0.00,136.00,2856.00,2856.00,0.00,'Paid' UNION ALL
+  SELECT 18,'Fatigue and weakness',                1050.00,180.00,850.00,50.00,0.00,107.50,2237.50,2237.50,0.00,'Paid' UNION ALL
+  SELECT 19,'Diabetes management',                 1050.00,200.00,800.00,50.00,0.00,105.00,2205.00,2205.00,0.00,'Paid' UNION ALL
+  SELECT 20,'Hypertension follow-up',              1050.00,180.00,500.00,50.00,0.00,89.00,1869.00,1869.00,0.00,'Paid'
+) bdata
+JOIN Appointment a ON a.Patient_ID=bdata.pid AND a.Reason=bdata.reason AND a.Appointment_Status='Completed';
 
-
--- Payments (20)
-INSERT INTO Payment(Bill_ID, Payment_Date, Amount, Payment_Method, Reference_No, Received_By) VALUES
-(1,  '2026-08-04', 2383.50, 'Cash',          'RCP-0001', 4),
-(2,  '2026-08-04', 1500.00, 'Card',          'RCP-0002', 4),
-(3,  '2026-08-04', 1449.00, 'Cash',          'RCP-0003', 4),
-(4,  '2026-08-04', 2152.50, 'Insurance',     'INS-0001', 4),
-(6,  '2026-08-04', 1365.00, 'Cash',          'RCP-0006', 4),
-(7,  '2026-08-04', 1287.50, 'Mobile_Money',  'MOB-0001', 4),
-(10, '2026-08-04', 1680.00, 'Card',          'RCP-0010', 4),
-(11, '2026-08-04', 1837.50, 'Cash',          'RCP-0011', 4),
-(13, '2026-08-04', 1564.50, 'Insurance',     'INS-0002', 4),
-(14, '2026-08-04', 2152.50, 'Cash',          'RCP-0014', 4),
-(16, '2026-08-04', 2908.50, 'Cash',          'RCP-0016', 4),
-(17, '2026-08-04', 2856.00, 'Bank_Transfer', 'TRF-0001', 4),
-(18, '2026-08-04', 2237.50, 'Cash',          'RCP-0018', 4),
-(19, '2026-08-04', 2205.00, 'Insurance',     'INS-0003', 4),
-(20, '2026-08-04', 1869.00, 'Card',          'RCP-0020', 4),
-(9,  '2026-08-04', 1000.00, 'Cash',          'RCP-0009', 4),
-(2,  '2026-08-05',  500.00, 'Cash',          'RCP-0002B',4),
-(5,  '2026-08-05', 1000.00, 'Card',          'RCP-0005', 4),
-(8,  '2026-08-05', 1000.00, 'Cash',          'RCP-0008', 4),
-(15, '2026-08-05',  700.00, 'Mobile_Money',  'MOB-0002', 4);
+-- Payments (20) — linked to bills dynamically
+INSERT INTO Payment(Bill_ID, Payment_Date, Amount, Payment_Method, Reference_No, Received_By)
+SELECT b.Bill_ID, CURDATE(), pdata.amount, pdata.method, pdata.ref, 4
+FROM (
+  SELECT 1 bnum,2383.50 amount,'Cash'          method,'RCP-0001' ref UNION ALL
+  SELECT 2,1500.00,'Card',          'RCP-0002' UNION ALL
+  SELECT 3,1449.00,'Cash',          'RCP-0003' UNION ALL
+  SELECT 4,2152.50,'Insurance',     'INS-0001' UNION ALL
+  SELECT 6,1365.00,'Cash',          'RCP-0006' UNION ALL
+  SELECT 7,1287.50,'Mobile_Money',  'MOB-0001' UNION ALL
+  SELECT 10,1680.00,'Card',         'RCP-0010' UNION ALL
+  SELECT 11,1837.50,'Cash',         'RCP-0011' UNION ALL
+  SELECT 13,1564.50,'Insurance',    'INS-0002' UNION ALL
+  SELECT 14,2152.50,'Cash',         'RCP-0014' UNION ALL
+  SELECT 16,2908.50,'Cash',         'RCP-0016' UNION ALL
+  SELECT 17,2856.00,'Bank_Transfer','TRF-0001' UNION ALL
+  SELECT 18,2237.50,'Cash',         'RCP-0018' UNION ALL
+  SELECT 19,2205.00,'Insurance',    'INS-0003' UNION ALL
+  SELECT 20,1869.00,'Card',         'RCP-0020' UNION ALL
+  SELECT 9,1000.00,'Cash',          'RCP-0009' UNION ALL
+  SELECT 2,500.00,'Cash',           'RCP-0002B' UNION ALL
+  SELECT 5,1000.00,'Card',          'RCP-0005' UNION ALL
+  SELECT 8,1000.00,'Cash',          'RCP-0008' UNION ALL
+  SELECT 15,700.00,'Mobile_Money',  'MOB-0002'
+) pdata
+JOIN (SELECT Bill_ID, ROW_NUMBER() OVER (ORDER BY Bill_ID) AS bnum FROM Bill) b
+  ON b.bnum = pdata.bnum;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

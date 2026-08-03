@@ -54,10 +54,10 @@ const Appointments = {
   // ── Book Appointment ──────────────────────────────────────
 
   async openBook() {
-    // Reset form state
     setHTML('book-patient-list', '');
     setHTML('book-doctor-list', '');
     setHTML('available-slots', '');
+    setHTML('available-dates-hint', '');
     $('appt-patient-search').value = '';
     $('appt-patient-id').value     = '';
     $('appt-doctor-search').value  = '';
@@ -120,8 +120,38 @@ const Appointments = {
         <span class="text-sm"> · Fee: ${Fmt.currency(fee)}</span>
         <span class="text-sm text-gray"> (ID: ${id})</span>
       </div>`);
+    // Load available dates for this doctor
+    this.loadAvailableDates(id);
     // Auto-load slots if date already selected
     if ($('appt-date').value) this.loadSlots();
+  },
+
+  async loadAvailableDates(doctorId) {
+    const res = await Api.get(`/doctors/${doctorId}/available-dates`);
+    if (!res.success || !res.data.length) {
+      setHTML('available-dates-hint', `
+        <div class="alert alert-warning" style="padding:8px 12px;margin-top:6px;font-size:12px">
+          ⚠️ No upcoming schedules found for this doctor.
+          Ask admin to add a schedule first.
+        </div>`);
+      return;
+    }
+    const dateList = res.data.map(d =>
+      `<span class="date-chip" onclick="Appointments.pickDate('${d.Work_Date.substring(0,10)}')"
+             title="${d.open_slots} open slots">
+         ${Fmt.date(d.Work_Date)} <span class="chip-badge">${d.open_slots}</span>
+       </span>`
+    ).join('');
+    setHTML('available-dates-hint', `
+      <div style="margin-top:8px">
+        <div class="form-label" style="margin-bottom:6px">Available dates (click to select):</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${dateList}</div>
+      </div>`);
+  },
+
+  pickDate(dateStr) {
+    $('appt-date').value = dateStr;
+    this.loadSlots();
   },
 
   async loadSlots() {

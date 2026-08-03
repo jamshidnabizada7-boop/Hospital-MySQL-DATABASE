@@ -120,7 +120,23 @@ router.put('/:id', authenticate, adminOr(ROLES.DOCTOR), async (req, res) => {
   } catch (err) { res.status(500).json({ success:false, message:err.message }); }
 });
 
-// GET /api/doctors/:id/schedule
+// GET /api/doctors/:id/available-dates — list future dates that have open slots
+router.get('/:id/available-dates', authenticate, async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT ds.Work_Date, COUNT(sl.Slot_ID) AS open_slots,
+             ds.Start_Time, ds.End_Time
+      FROM Doctor_Schedule ds
+      JOIN Appointment_Slot sl ON sl.Schedule_ID=ds.Schedule_ID
+      WHERE ds.Doctor_ID=?
+        AND ds.Work_Date >= CURDATE()
+        AND ds.Status='Available'
+        AND sl.Status='Open'
+      GROUP BY ds.Schedule_ID
+      ORDER BY ds.Work_Date`, [req.params.id]);
+    res.json({ success:true, data:rows });
+  } catch (err) { res.status(500).json({ success:false, message:err.message }); }
+});
 router.get('/:id/schedule', authenticate, async (req, res) => {
   // Doctor can only view own schedule
   if (req.user.role === ROLES.DOCTOR && parseInt(req.params.id) !== req.user.doctorId)

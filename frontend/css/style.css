@@ -471,3 +471,30 @@ select.form-control { cursor: pointer; }
   font-size: 13px;
   font-style: italic;
 }
+
+/* ── Available date chips ──────────────────────────────── */
+.date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d4ed8;
+  cursor: pointer;
+  transition: all var(--trans);
+  white-space: nowrap;
+}
+.date-chip:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.chip-badge {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.date-chip:hover .chip-badge { background: rgba(255,255,255,0.3); }
