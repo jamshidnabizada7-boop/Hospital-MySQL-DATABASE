@@ -32,9 +32,46 @@ const App = {
 
     $('logout-btn').addEventListener('click', () => Auth.logout());
 
-    // Start on dashboard
-    this.navigate('dashboard');
-    Dashboard.load();
+    // Sidebar accordion logic
+    $$('.nav-section').forEach(sec => {
+      sec.style.cursor = 'pointer';
+      sec.title = 'Toggle Section';
+      sec.dataset.collapsed = 'false';
+      if(!sec.querySelector('.toggle-icon')) {
+        const icon = document.createElement('span');
+        icon.className = 'toggle-icon';
+        icon.style.float = 'right';
+        icon.style.transition = 'transform 0.2s';
+        icon.textContent = '▼';
+        sec.appendChild(icon);
+      }
+      sec.addEventListener('click', () => {
+        const icon = sec.querySelector('.toggle-icon');
+        const isCollapsing = sec.dataset.collapsed === 'false';
+        sec.dataset.collapsed = isCollapsing ? 'true' : 'false';
+        
+        if (icon) icon.style.transform = isCollapsing ? 'rotate(-90deg)' : '';
+        
+        let next = sec.nextElementSibling;
+        while (next && next.classList.contains('nav-item')) {
+          if (isCollapsing) next.classList.add('hidden');
+          else next.classList.remove('hidden');
+          next = next.nextElementSibling;
+        }
+      });
+    });
+
+    // Start on URL path or dashboard
+    const path = window.location.pathname.replace(/^\//, '') || 'dashboard';
+    const validPages = ['dashboard', 'patients', 'doctors', 'appointments', 'billing', 'pharmacy', 'laboratory', 'reports'];
+    const startPage = validPages.includes(path) ? path : 'dashboard';
+    this.navigate(startPage, true);
+
+    // Handle back/forward navigation
+    window.addEventListener('popstate', (e) => {
+      const p = e.state?.page || window.location.pathname.replace(/^\//, '') || 'dashboard';
+      if (validPages.includes(p)) this.navigate(p, true);
+    });
   },
 
   roleFriendly(role) {
@@ -133,8 +170,12 @@ const App = {
     }
   },
 
-  navigate(page) {
+  navigate(page, skipPushState = false) {
     this.currentPage = page;
+
+    if (!skipPushState && window.location.pathname !== '/' + page) {
+      window.history.pushState({ page }, '', '/' + page);
+    }
 
     $$('.nav-item').forEach(i => i.classList.remove('active'));
     const active = document.querySelector(`.nav-item[data-page="${page}"]`);

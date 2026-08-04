@@ -94,7 +94,20 @@ router.get('/me', authenticate, async (req, res) => {
       SELECT u.User_ID, u.Username, u.Full_Name, u.Email, u.Phone, u.Last_Login, r.Role_Name
       FROM App_User u JOIN Role r ON u.Role_ID=r.Role_ID WHERE u.User_ID=?`, [req.user.id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'User not found' });
-    res.json({ success: true, user: { ...rows[0], doctorId: req.user.doctorId, employeeId: req.user.employeeId } });
+    res.json({
+      success: true,
+      user: {
+        id: rows[0].User_ID,
+        username: rows[0].Username,
+        name: rows[0].Full_Name,
+        email: rows[0].Email,
+        phone: rows[0].Phone,
+        lastLogin: rows[0].Last_Login,
+        role: rows[0].Role_Name,
+        doctorId: req.user.doctorId,
+        employeeId: req.user.employeeId
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

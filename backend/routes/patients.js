@@ -27,14 +27,14 @@ router.get('/', authenticate, canRead, async (req, res) => {
              TIMESTAMPDIFF(YEAR, Date_Of_Birth, CURDATE()) AS Age
       FROM Patient
       WHERE Is_Active=1
-        AND (First_Name LIKE ? OR Last_Name LIKE ? OR Phone LIKE ? OR Email LIKE ?)
+        AND (First_Name LIKE ? OR Last_Name LIKE ? OR CONCAT(First_Name, ' ', Last_Name) LIKE ? OR Phone LIKE ? OR Email LIKE ?)
       ORDER BY Last_Name, First_Name
-      LIMIT ? OFFSET ?`, [like,like,like,like, parseInt(limit), offset]);
+      LIMIT ? OFFSET ?`, [like,like,like,like,like, parseInt(limit), offset]);
 
     const [[{ total }]] = await db.query(
       `SELECT COUNT(*) AS total FROM Patient
-       WHERE Is_Active=1 AND (First_Name LIKE ? OR Last_Name LIKE ? OR Phone LIKE ? OR Email LIKE ?)`,
-      [like,like,like,like]);
+       WHERE Is_Active=1 AND (First_Name LIKE ? OR Last_Name LIKE ? OR CONCAT(First_Name, ' ', Last_Name) LIKE ? OR Phone LIKE ? OR Email LIKE ?)`,
+      [like,like,like,like,like]);
 
     res.json({ success:true, data:rows, total, page:parseInt(page), limit:parseInt(limit) });
   } catch (err) { res.status(500).json({ success:false, message:err.message }); }

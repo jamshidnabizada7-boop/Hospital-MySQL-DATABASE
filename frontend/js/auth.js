@@ -39,6 +39,16 @@ const Auth = {
   showLogin() {
     show('auth-screen');
     hide('app');
+    
+    const form = $('login-form');
+    if (form) {
+      form.reset();
+      const btn = form.querySelector('[type=submit]');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    }
   },
 
   showApp() {

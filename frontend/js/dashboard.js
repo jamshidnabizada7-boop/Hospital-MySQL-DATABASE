@@ -30,6 +30,7 @@ const Dashboard = {
           <div class="stat-icon blue">📅</div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.today_appointments)}</div><div class="stat-label">Today's Appointments</div></div>
         </div>
+        ${(canDo('isAdmin') || canDo('processPayment')) ? `
         <div class="stat-card">
           <div class="stat-icon amber">💰</div>
           <div class="stat-body"><div class="stat-value">${Fmt.currency(s.today_revenue)}</div><div class="stat-label">Today's Revenue</div></div>
@@ -38,6 +39,7 @@ const Dashboard = {
           <div class="stat-icon red">🧾</div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.pending_bills)}</div><div class="stat-label">Pending Bills</div></div>
         </div>
+        ` : ''}
         <div class="stat-card">
           <div class="stat-icon purple">📋</div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.scheduled_appointments)}</div><div class="stat-label">Scheduled</div></div>
@@ -81,6 +83,13 @@ const Dashboard = {
 
   renderRevenueChart(data) {
     const el = $('dash-revenue-chart');
+    const showFinancials = canDo('isAdmin') || canDo('processPayment');
+    if (el && !showFinancials) {
+      if (el.parentElement) el.parentElement.style.display = 'none';
+      const grid = el.closest('.grid-2');
+      if (grid) grid.style.gridTemplateColumns = '1fr';
+      return;
+    }
     if (!el || !data?.length) { if(el) el.innerHTML='<p class="text-gray text-center mt-4">No revenue data</p>'; return; }
     const max = Math.max(...data.map(d=>d.total), 1);
     const bars = data.map(d => {
