@@ -158,7 +158,7 @@ const Laboratory = {
     Modal.open('new-order-modal');
   },
 
-  async searchPatient() {
+  searchPatient: debounce(async () => {
     const q = $('lab-patient-search').value.trim();
     if (q.length < 2) { setHTML('lab-patient-list', ''); return; }
     const res = await Api.getQ('/patients', { search: q, limit: 8 });
@@ -171,7 +171,7 @@ const Laboratory = {
         <div class="text-sm text-gray">${p.Phone} · ${p.Blood_Group}</div>
       </div>`).join('');
     setHTML('lab-patient-list', items);
-  },
+  }, 350),
 
   async selectPatient(id, name, phone) {
     $('lab-patient-id').value     = id;

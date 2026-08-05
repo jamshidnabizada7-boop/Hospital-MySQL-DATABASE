@@ -60,12 +60,24 @@ const Doctors = {
           <div style="display:flex;gap:6px">
             <button class="btn btn-outline btn-sm" onclick="Doctors.viewSchedule(${d.Doctor_ID},'Dr. ${d.First_Name} ${d.Last_Name}')">Schedule</button>
             ${canDo('editDoctor') ? `<button class="btn btn-ghost btn-sm" onclick="Doctors.openEdit(${d.Doctor_ID})">✏️</button>` : ''}
+            ${canDo('deleteDoctor') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Doctors.delete(${d.Doctor_ID})">🗑️</button>` : ''}
           </div>
         </td>
       </tr>`).join('');
     setHTML('doctors-table', rows);
     renderPagination('doctors-pagination', {page,total,limit}, `p=>Doctors.load(p)`);
     $('doctors-count').textContent = `${total} doctor${total!==1?'s':''}`;
+  },
+
+  async delete(id) {
+    if (!confirm('Are you sure you want to delete this doctor?')) return;
+    const res = await Api.delete(`/doctors/${id}`);
+    if (res.success) {
+      Toast.success('Doctor deleted');
+      this.load(this.page);
+    } else {
+      Toast.error(res.message);
+    }
   },
 
   openAdd() {
@@ -180,7 +192,7 @@ const Doctors = {
     Modal.open('add-schedule-modal');
   },
 
-  async searchDoctorForSchedule() {
+  searchDoctorForSchedule: debounce(async () => {
     const q = $('schedule-doctor-search').value.trim();
     if (q.length < 2) { setHTML('schedule-doctor-list', ''); return; }
     const res = await Api.getQ('/doctors', { search: q, limit: 8 });
@@ -193,7 +205,7 @@ const Doctors = {
         <div class="text-sm text-gray">${d.Dept_Name} · ${d.Spec_Name}</div>
       </div>`).join('');
     setHTML('schedule-doctor-list', items);
-  },
+  }, 350),
 
   selectDoctorForSchedule(id, name, dept) {
     $('schedule-doctor-id').value     = id;

@@ -69,7 +69,7 @@ const Appointments = {
     Modal.open('book-appt-modal');
   },
 
-  async searchPatients() {
+  searchPatients: debounce(async () => {
     const q = $('appt-patient-search').value.trim();
     if (q.length < 2) { setHTML('book-patient-list', ''); return; }
     const res = await Api.getQ('/patients', { search: q, limit: 8 });
@@ -82,7 +82,7 @@ const Appointments = {
         <div class="text-sm text-gray">${p.Phone} · Age ${p.Age} · ${p.Blood_Group}</div>
       </div>`).join('');
     setHTML('book-patient-list', items);
-  },
+  }, 350),
 
   selectPatient(id, name, phone) {
     $('appt-patient-id').value = id;
@@ -95,7 +95,7 @@ const Appointments = {
       </div>`);
   },
 
-  async searchDoctors() {
+  searchDoctors: debounce(async () => {
     const q = $('appt-doctor-search').value.trim();
     if (q.length < 2) { setHTML('book-doctor-list', ''); return; }
     const res = await Api.getQ('/doctors', { search: q, limit: 8 });
@@ -108,7 +108,7 @@ const Appointments = {
         <div class="text-sm text-gray">${d.Dept_Name} · ${d.Spec_Name} · Fee: ${Fmt.currency(d.Consultation_Fee)}</div>
       </div>`).join('');
     setHTML('book-doctor-list', items);
-  },
+  }, 350),
 
   selectDoctor(id, name, dept, fee) {
     $('appt-doctor-id').value = id;

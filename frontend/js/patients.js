@@ -130,8 +130,8 @@ const Patients = {
 function initPatientsSearch() {
   const inp = $('patients-search');
   if (!inp) return;
-  inp.addEventListener('input', debounce(e => {
+  inp.oninput = debounce(e => {
     Patients.search = e.target.value;
     Patients.load(1);
-  }, 350));
+  }, 350);
 }

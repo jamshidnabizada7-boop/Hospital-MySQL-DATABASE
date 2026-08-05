@@ -120,6 +120,23 @@ router.put('/:id', authenticate, adminOr(ROLES.DOCTOR), async (req, res) => {
   } catch (err) { res.status(500).json({ success:false, message:err.message }); }
 });
 
+// DELETE /api/doctors/:id — Admin only
+router.delete('/:id', authenticate, adminOr(), async (req, res) => {
+  try {
+    const [result] = await db.query('DELETE FROM Doctor WHERE Doctor_ID=?', [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+    res.json({ success: true, message: 'Doctor deleted' });
+  } catch (err) {
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+      res.status(409).json({ success: false, message: 'Cannot delete doctor because they have active lab orders or other dependencies.' });
+    } else {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  }
+});
+
 // GET /api/doctors/:id/available-dates — list future dates that have open slots
 router.get('/:id/available-dates', authenticate, async (req, res) => {
   try {

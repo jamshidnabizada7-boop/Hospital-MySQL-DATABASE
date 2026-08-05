@@ -122,6 +122,7 @@ const App = {
       // Doctors
       addDoctor:        isAdmin,
       editDoctor:       isAdmin || isDoctor,
+      deleteDoctor:     isAdmin,
       addSchedule:      isAdmin || isDoctor,
       // Appointments
       bookAppointment:  isAdmin || isReceptionist,

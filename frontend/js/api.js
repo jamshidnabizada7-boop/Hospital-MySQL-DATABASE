@@ -22,7 +22,15 @@ const Api = {
     };
     if (body) opts.body = JSON.stringify(body);
 
-    const res  = await fetch(`${API_BASE}${path}`, opts);
+    let res;
+    try {
+      res = await fetch(`${API_BASE}${path}`, opts);
+    } catch (err) {
+      // Network error (offline, server down, etc.)
+      console.error('Network Error:', err);
+      if (typeof Toast !== 'undefined') Toast.error('Network error. Check connection or server.');
+      return { success: false, message: 'Network error. Please try again later.' };
+    }
     const data = await res.json().catch(() => ({ success: false, message: res.statusText }));
 
     if (res.status === 401) {

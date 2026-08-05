@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- Hospital Management System - Complete MySQL 8.0 Database
 -- Author  : Senior Database Architect
 -- Version : 1.0.0
@@ -209,7 +209,7 @@ CREATE TABLE Doctor_Schedule (
     Created_At    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     Updated_At    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_schedule         PRIMARY KEY (Schedule_ID),
-    CONSTRAINT uq_doctor_workdate  UNIQUE      (Doctor_ID, Work_Date),
+
     CONSTRAINT fk_sched_doctor     FOREIGN KEY (Doctor_ID) REFERENCES Doctor(Doctor_ID)
                                    ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_sched_times     CHECK (End_Time > Start_Time)
@@ -244,7 +244,7 @@ CREATE TABLE Appointment (
     Created_At         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     Updated_At         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_appointment       PRIMARY KEY (Appointment_ID),
-    CONSTRAINT uq_slot_booked       UNIQUE      (Slot_ID),
+    KEY idx_appointment_slot (Slot_ID),
     CONSTRAINT fk_appt_patient      FOREIGN KEY (Patient_ID) REFERENCES Patient(Patient_ID)
                                     ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_appt_slot         FOREIGN KEY (Slot_ID)    REFERENCES Appointment_Slot(Slot_ID)
@@ -340,7 +340,7 @@ CREATE TABLE Medicine (
     Is_Active       TINYINT(1)     NOT NULL DEFAULT 1,
     Created_At      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_medicine       PRIMARY KEY (Medicine_ID),
-    CONSTRAINT uq_medicine_name  UNIQUE      (Medicine_Name, Strength),
+
     CONSTRAINT fk_med_category   FOREIGN KEY (Category_ID) REFERENCES Medicine_Category(Category_ID)
                                  ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT chk_unit_price    CHECK (Unit_Price >= 0)
@@ -1152,16 +1152,16 @@ INSERT INTO Role(Role_Name, Description) VALUES
 
 -- App Users (passwords are bcrypt hash placeholders)
 INSERT INTO App_User(Role_ID, Username, Password_Hash, Full_Name, Email, Phone) VALUES
-(1, 'admin',        '$2b$12$adminHashXXXXXXXXXXXXXX', 'System Admin',         'admin@hospital.com',       '0700000001'),
-(2, 'receptionist1','$2b$12$recep1HashXXXXXXXXXXXXX', 'Sara Ahmed',           'sara@hospital.com',        '0700000002'),
-(3, 'dr_kamal',     '$2b$12$drkamalHashXXXXXXXXXXXX', 'Dr. Kamal Haidari',    'kamal@hospital.com',       '0700000003'),
-(3, 'dr_layla',     '$2b$12$drlaylaHashXXXXXXXXXXXX', 'Dr. Layla Noori',      'layla@hospital.com',       '0700000004'),
-(3, 'dr_omar',      '$2b$12$dromarHashXXXXXXXXXXXXX', 'Dr. Omar Yousuf',      'omar@hospital.com',        '0700000005'),
-(4, 'labtech1',     '$2b$12$labtech1HashXXXXXXXXXXX', 'Nadia Karimi',         'nadia@hospital.com',       '0700000006'),
-(5, 'pharmacist1',  '$2b$12$pharm1HashXXXXXXXXXXXXX', 'Khalid Wardak',        'khalid@hospital.com',      '0700000007'),
-(6, 'accountant1',  '$2b$12$acct1HashXXXXXXXXXXXXXX', 'Roya Ahmadi',          'roya@hospital.com',        '0700000008'),
-(3, 'dr_fatima',    '$2b$12$drfatimaHashXXXXXXXXXXX', 'Dr. Fatima Sultani',   'fatima@hospital.com',      '0700000009'),
-(3, 'dr_rahul',     '$2b$12$drrahulHashXXXXXXXXXXXX', 'Dr. Rahul Sharma',     'rahul@hospital.com',       '0700000010');
+(1, 'admin',        ', 'System Admin'b1, 'admin',        0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'System Admin',         'admin@hospital.com',       '0700000001'),
+(2, 'receptionist1',', 'Sara Ahmed'b2, 'receptionist1',0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Sara Ahmed',           'sara@hospital.com',        '0700000002'),
+(3, 'dr_kamal',     ', 'Dr. Kamal Haidari'b3, 'dr_kamal',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Kamal Haidari',    'kamal@hospital.com',       '0700000003'),
+(3, 'dr_layla',     ', 'Dr. Layla Noori'b3, 'dr_layla',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Layla Noori',      'layla@hospital.com',       '0700000004'),
+(3, 'dr_omar',      ', 'Dr. Omar Yousuf'b3, 'dr_omar',      0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Omar Yousuf',      'omar@hospital.com',        '0700000005'),
+(4, 'labtech1',     ', 'Nadia Karimi'b4, 'labtech1',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Nadia Karimi',         'nadia@hospital.com',       '0700000006'),
+(5, 'pharmacist1',  ', 'Khalid Wardak'b5, 'pharmacist1',  0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Khalid Wardak',        'khalid@hospital.com',      '0700000007'),
+(6, 'accountant1',  ', 'Roya Ahmadi'b6, 'accountant1',  0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Roya Ahmadi',          'roya@hospital.com',        '0700000008'),
+(3, 'dr_fatima',    ', 'Dr. Fatima Sultani'b3, 'dr_fatima',    0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Fatima Sultani',   'fatima@hospital.com',      '0700000009'),
+(3, 'dr_rahul',     ', 'Dr. Rahul Sharma'b3, 'dr_rahul',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Rahul Sharma',     'rahul@hospital.com',       '0700000010');
 
 -- Specializations
 INSERT INTO Specialization(Spec_Name, Description) VALUES
@@ -1266,7 +1266,7 @@ INSERT INTO Patient(First_Name, Last_Name, Gender, Date_Of_Birth, Blood_Group,
 ('Faisal',    'Popal',      'Male',   '1962-03-18', 'AB+',     '0780000049', 'faisal@mail.com',   '77 Samangan',  'Gul Popal',       '0780000050');
 
 
--- Doctor Schedules — using CURDATE() + intervals so dates are always in the future
+-- Doctor Schedules � using CURDATE() + intervals so dates are always in the future
 -- These 20 schedules are for the sample appointment data below
 INSERT INTO Doctor_Schedule(Doctor_ID, Work_Date, Start_Time, End_Time, Status) VALUES
 (1,  DATE_ADD(CURDATE(), INTERVAL 1  DAY),'08:00:00','14:00:00','Available'),
@@ -1404,7 +1404,7 @@ SET sl.Status = CASE
 END;
 
 
--- Medical Records — reference appointments dynamically by patient+reason
+-- Medical Records � reference appointments dynamically by patient+reason
 INSERT INTO Medical_Record(Appointment_ID, Diagnosis, Treatment, Visit_Notes, Follow_Up_Date)
 SELECT a.Appointment_ID, mr.diag, mr.treat, mr.notes, mr.followup
 FROM (
@@ -1499,7 +1499,7 @@ INSERT INTO Inventory(Pharmacy_ID, Medicine_ID, Quantity_In_Stock, Reorder_Level
 (2, 20,   70, 10, 'BATCH-B010', '2027-04-30',  16.00);
 
 
--- Prescriptions — linked to Medical Records by appointment patient+reason
+-- Prescriptions � linked to Medical Records by appointment patient+reason
 INSERT INTO Prescription(Record_ID, Prescription_Date, Notes)
 SELECT mr.Record_ID, CURDATE(), pdata.notes
 FROM (
@@ -1527,7 +1527,7 @@ FROM (
 JOIN Appointment a  ON a.Patient_ID=pdata.pid AND a.Reason=pdata.reason AND a.Appointment_Status='Completed'
 JOIN Medical_Record mr ON mr.Appointment_ID=a.Appointment_ID;
 
--- Prescription Items (20) — linked dynamically via prescription order
+-- Prescription Items (20) � linked dynamically via prescription order
 INSERT INTO Prescription_Item(Prescription_ID,Medicine_ID,Dosage,Frequency,Duration_Days,Instructions)
 SELECT pr.Prescription_ID, pi.med_id, pi.dosage, pi.freq, pi.dur, pi.instr
 FROM (
@@ -1569,7 +1569,7 @@ INSERT INTO Lab_Test(Test_Name, Test_Code, Category, Normal_Range, Unit, Price, 
 ('ECG',                          'ECG',      'Cardiology',   'Normal sinus',     '',       400.00, 1),
 ('Chest X-Ray',                  'CXR',      'Radiology',    'Clear lungs',      '',       600.00, 2);
 
--- Lab Orders (20) — completed ones reference completed appointments, pending ones reference scheduled
+-- Lab Orders (20) � completed ones reference completed appointments, pending ones reference scheduled
 INSERT INTO Lab_Order(Appointment_ID, Doctor_ID, Priority, Status, Notes)
 SELECT a.Appointment_ID, lo.doc_id, lo.priority, lo.status, lo.notes
 FROM (
@@ -1597,7 +1597,7 @@ FROM (
 JOIN Appointment a ON a.Patient_ID=lo.pid AND a.Reason=lo.reason;
 
 
--- Lab Results (20) — reference lab orders by position
+-- Lab Results (20) � reference lab orders by position
 INSERT INTO Lab_Result(Order_ID, Test_ID, Result, Is_Abnormal, Remarks, Performed_By)
 SELECT lo.Order_ID, lr.test_id, lr.result, lr.abnormal, lr.remarks, lr.performed_by
 FROM (
@@ -1626,7 +1626,7 @@ JOIN (SELECT Order_ID, ROW_NUMBER() OVER (ORDER BY Order_ID) AS onum FROM Lab_Or
   ON lo.onum = lr.onum;
 
 
--- Bills (20) — linked to completed appointments dynamically
+-- Bills (20) � linked to completed appointments dynamically
 INSERT INTO Bill(Appointment_ID, Bill_Date, Consultation_Fee, Medicine_Fee, Lab_Fee,
                  Other_Fee, Discount, Tax, Total_Amount, Amount_Paid, Balance_Due, Bill_Status)
 SELECT a.Appointment_ID, CURDATE(),
@@ -1655,7 +1655,7 @@ FROM (
 ) bdata
 JOIN Appointment a ON a.Patient_ID=bdata.pid AND a.Reason=bdata.reason AND a.Appointment_Status='Completed';
 
--- Payments (20) — linked to bills dynamically
+-- Payments (20) � linked to bills dynamically
 INSERT INTO Payment(Bill_ID, Payment_Date, Amount, Payment_Method, Reference_No, Received_By)
 SELECT b.Bill_ID, CURDATE(), pdata.amount, pdata.method, pdata.ref, 4
 FROM (
@@ -1750,19 +1750,7 @@ BEGIN
     END IF;
 END$$
 
--- Trigger: Automatically deduct inventory after prescription item is created
-CREATE TRIGGER trg_deduct_inventory_on_prescription
-AFTER INSERT ON Prescription_Item
-FOR EACH ROW
-BEGIN
-    UPDATE Inventory
-    SET    Quantity_In_Stock = GREATEST(0, Quantity_In_Stock - 1)
-    WHERE  Medicine_ID = NEW.Medicine_ID
-      AND  Expiry_Date >= CURRENT_DATE
-      AND  Quantity_In_Stock > 0
-    ORDER  BY Expiry_Date ASC
-    LIMIT  1;
-END$$
+
 
 -- Trigger: Recalculate Bill totals after each payment (sum-based, accurate)
 CREATE TRIGGER trg_update_bill_status_after_payment
@@ -2408,4 +2396,5 @@ END;
 -- END OF Hospital_Management_System.sql
 -- ============================================================
 SELECT 'Hospital Management System database created successfully!' AS Status;
+
 

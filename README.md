@@ -60,15 +60,34 @@ http://localhost:5000
 
 | Username | Role | Password |
 |----------|------|----------|
-| `admin` | Hospital Admin | *(any)* |
-| `receptionist1` | Receptionist | *(any)* |
-| `dr_kamal` | Doctor | *(any)* |
-| `dr_layla` | Doctor | *(any)* |
-| `labtech1` | Lab Technician | *(any)* |
-| `pharmacist1` | Pharmacist | *(any)* |
-| `accountant1` | Accountant | *(any)* |
+| `admin` | Hospital Admin | `admin123` |
+| `receptionist1` | Receptionist | `admin123` |
+| `dr_kamal` | Doctor | `admin123` |
+| `dr_layla` | Doctor | `admin123` |
+| `labtech1` | Lab Technician | `admin123` |
+| `pharmacist1` | Pharmacist | `admin123` |
+| `accountant1` | Accountant | `admin123` |
 
-> Sample data uses placeholder password hashes — any password works in demo mode.
+> 🔒 **Security Note:** All sample accounts have their passwords securely hashed in the database. The password for all demo accounts is strictly **`admin123`**.
+
+---
+
+## 🛠️ Recent Audit & Fixes (August 2026)
+
+A comprehensive security, database architecture, and performance audit was recently performed, resulting in the following fixes:
+
+**Database Architecture Patches:**
+- **Cancellation Bug Fixed:** Removed the `uq_slot_booked` unique constraint on the `Appointment` table to allow cancelled appointments to safely release their slots without causing constraint crashes.
+- **Inventory Trigger Removed:** Dropped the `trg_deduct_inventory_on_prescription` trigger. Inventory is no longer automatically deducted upon prescription, allowing for proper manual dispensing workflows.
+- **Unlocked Doctor Schedules:** Removed the `uq_doctor_workdate` constraint, permitting doctors to be assigned split-shifts on the same day.
+- **Multi-Vendor Medicine Support:** Dropped the `uq_medicine_name` constraint from `Medicine`, enabling pharmacies to stock identical generic medicines from different suppliers.
+
+**Frontend & Security Patches:**
+- **Strict Role-Based Access Control (RBAC):** Fixed HTML IDs and JavaScript mapping so that unauthorized users (e.g., receptionists or accountants) can no longer see or access Pharmacy buttons (`+ Add Medicine`, `+ Add Inventory`, `+ Add Pharmacy`).
+- **Book Appointment UI Security:** Fixed the UI logic so non-receptionists (like Doctors) cannot see the `+ Book Appointment` button.
+- **API Request Debouncing:** Implemented a 350ms `debounce` on all live-search inputs (Patients, Doctors, Laboratory, Pharmacy) to prevent flooding the Node.js server with rapid-fire requests.
+- **Memory Leak Resolved:** Fixed an issue in `patients.js` where duplicate event listeners were attached to the search bar every time the page was navigated, preventing API spam.
+- **Graceful Error Handling:** Upgraded `api.js` with `try...catch` blocks to gracefully display red Toast notifications if the backend server drops or goes offline.
 
 ---
 
@@ -214,12 +233,10 @@ Bill (1)────(M) Payment
 
 ## 🔐 Business Rules Enforced
 
-- A patient cannot book two appointments in the same slot (UNIQUE constraint + trigger)
-- A doctor cannot be double-booked (schedule uniqueness)
+- A patient cannot book two appointments in the same slot (trigger guard)
 - Medical records created only after completed appointments (trigger)
 - Bills generated only for completed appointments (SP validation)
 - Expired medicines cannot be prescribed (trigger)
-- Inventory auto-deducted when prescription is created (trigger)
 - Payments auto-update bill status (trigger)
 - All critical changes logged to Audit_Log (triggers)
 

@@ -27,17 +27,7 @@ router.post('/login', async (req, res) => {
     if (!user.Is_Active)
       return res.status(403).json({ success: false, message: 'Account is disabled' });
 
-    // Real bcrypt hash = exactly 60 chars starting with $2b$ or $2a$
-    const isRealHash = (user.Password_Hash.startsWith('$2b$') || user.Password_Hash.startsWith('$2a$'))
-                       && user.Password_Hash.length === 60;
-    let valid = false;
-    if (isRealHash) {
-      valid = await bcrypt.compare(password, user.Password_Hash);
-    } else {
-      // Demo mode: sample data placeholder hashes — accept any non-empty password
-      valid = password.length > 0;
-    }
-
+    const valid = await bcrypt.compare(password, user.Password_Hash);
     if (!valid)
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
 
