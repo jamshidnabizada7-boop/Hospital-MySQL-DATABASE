@@ -140,7 +140,7 @@ ALTER TABLE Department
 CREATE TABLE Employee (
     Emp_ID        INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     User_ID       INT UNSIGNED      NULL,
-    Dept_ID       INT UNSIGNED  NOT NULL,
+    Dept_ID       INT UNSIGNED      NULL,
     First_Name    VARCHAR(50)   NOT NULL,
     Last_Name     VARCHAR(50)   NOT NULL,
     Gender        ENUM('Male','Female','Other') NOT NULL,
@@ -1150,18 +1150,18 @@ INSERT INTO Role(Role_Name, Description) VALUES
 ('Pharmacist',      'Inventory and dispensing'),
 ('Accountant',      'Billing and payments');
 
--- App Users (passwords are bcrypt hash placeholders)
+-- App Users (passwords are bcrypt hash for 'x')
 INSERT INTO App_User(Role_ID, Username, Password_Hash, Full_Name, Email, Phone) VALUES
-(1, 'admin',        ', 'System Admin'b1, 'admin',        0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'System Admin',         'admin@hospital.com',       '0700000001'),
-(2, 'receptionist1',', 'Sara Ahmed'b2, 'receptionist1',0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Sara Ahmed',           'sara@hospital.com',        '0700000002'),
-(3, 'dr_kamal',     ', 'Dr. Kamal Haidari'b3, 'dr_kamal',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Kamal Haidari',    'kamal@hospital.com',       '0700000003'),
-(3, 'dr_layla',     ', 'Dr. Layla Noori'b3, 'dr_layla',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Layla Noori',      'layla@hospital.com',       '0700000004'),
-(3, 'dr_omar',      ', 'Dr. Omar Yousuf'b3, 'dr_omar',      0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Omar Yousuf',      'omar@hospital.com',        '0700000005'),
-(4, 'labtech1',     ', 'Nadia Karimi'b4, 'labtech1',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Nadia Karimi',         'nadia@hospital.com',       '0700000006'),
-(5, 'pharmacist1',  ', 'Khalid Wardak'b5, 'pharmacist1',  0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Khalid Wardak',        'khalid@hospital.com',      '0700000007'),
-(6, 'accountant1',  ', 'Roya Ahmadi'b6, 'accountant1',  0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Roya Ahmadi',          'roya@hospital.com',        '0700000008'),
-(3, 'dr_fatima',    ', 'Dr. Fatima Sultani'b3, 'dr_fatima',    0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Fatima Sultani',   'fatima@hospital.com',      '0700000009'),
-(3, 'dr_rahul',     ', 'Dr. Rahul Sharma'b3, 'dr_rahul',     0$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O', 'Dr. Rahul Sharma',     'rahul@hospital.com',       '0700000010');
+(1, 'admin',        ', 'System Admin'b1, 'admin',        0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'System Admin',         'admin@hospital.com',       '0700000001'),
+(2, 'receptionist1',', 'Sara Ahmed'b2, 'receptionist1',0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Sara Ahmed',           'sara@hospital.com',        '0700000002'),
+(3, 'dr_kamal',     ', 'Dr. Kamal Haidari'b3, 'dr_kamal',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Kamal Haidari',    'kamal@hospital.com',       '0700000003'),
+(3, 'dr_layla',     ', 'Dr. Layla Noori'b3, 'dr_layla',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Layla Noori',      'layla@hospital.com',       '0700000004'),
+(3, 'dr_omar',      ', 'Dr. Omar Yousuf'b3, 'dr_omar',      0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Omar Yousuf',      'omar@hospital.com',        '0700000005'),
+(4, 'labtech1',     ', 'Nadia Karimi'b4, 'labtech1',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Nadia Karimi',         'nadia@hospital.com',       '0700000006'),
+(5, 'pharmacist1',  ', 'Khalid Wardak'b5, 'pharmacist1',  0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Khalid Wardak',        'khalid@hospital.com',      '0700000007'),
+(6, 'accountant1',  ', 'Roya Ahmadi'b6, 'accountant1',  0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Roya Ahmadi',          'roya@hospital.com',        '0700000008'),
+(3, 'dr_fatima',    ', 'Dr. Fatima Sultani'b3, 'dr_fatima',    0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Fatima Sultani',   'fatima@hospital.com',      '0700000009'),
+(3, 'dr_rahul',     ', 'Dr. Rahul Sharma'b3, 'dr_rahul',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Rahul Sharma',     'rahul@hospital.com',       '0700000010');
 
 -- Specializations
 INSERT INTO Specialization(Spec_Name, Description) VALUES

@@ -38,11 +38,11 @@ const Appointments = {
         <td>
           <div style="display:flex;gap:5px;flex-wrap:wrap">
             ${a.Appointment_Status==='Scheduled' && canDo('completeAppt') ? `
-              <button class="btn btn-success btn-sm" onclick="Appointments.openComplete(${a.Appointment_ID})">✔ Complete</button>` : ''}
+              <button class="btn btn-success btn-sm" onclick="Appointments.openComplete(${a.Appointment_ID})"><i data-lucide="check-circle" width="14" height="14" style="margin-right:4px;vertical-align:middle"></i> Complete</button>` : ''}
             ${a.Appointment_Status==='Scheduled' && canDo('cancelAppointment') ? `
-              <button class="btn btn-danger btn-sm" onclick="Appointments.openCancel(${a.Appointment_ID})">✘ Cancel</button>` : ''}
+              <button class="btn btn-danger btn-sm" onclick="Appointments.openCancel(${a.Appointment_ID})"><i data-lucide="x-circle" width="14" height="14" style="margin-right:4px;vertical-align:middle"></i> Cancel</button>` : ''}
             ${a.Appointment_Status==='Completed' && canDo('generateBill') ? `
-              <button class="btn btn-outline btn-sm" onclick="Appointments.openBillGen(${a.Appointment_ID})">💰 Bill</button>` : ''}
+              <button class="btn btn-outline btn-sm" onclick="Appointments.openBillGen(${a.Appointment_ID})"><i data-lucide="receipt" width="14" height="14" style="margin-right:4px;vertical-align:middle"></i> Bill</button>` : ''}
           </div>
         </td>
       </tr>`).join('');
@@ -90,7 +90,7 @@ const Appointments = {
     setHTML('book-patient-list', '');
     setHTML('selected-patient-display', `
       <div class="alert alert-success" style="padding:8px 12px;margin-top:6px">
-        ✅ <strong>${name}</strong> — ${phone}
+        <i data-lucide="check-circle" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> <strong>${name}</strong> — ${phone}
         <span class="text-sm text-gray"> (ID: ${id})</span>
       </div>`);
   },
@@ -116,7 +116,7 @@ const Appointments = {
     setHTML('book-doctor-list', '');
     setHTML('selected-doctor-display', `
       <div class="alert alert-info" style="padding:8px 12px;margin-top:6px">
-        🩺 <strong>${name}</strong> — ${dept}
+        <i data-lucide="stethoscope" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> <strong>${name}</strong> — ${dept}
         <span class="text-sm"> · Fee: ${Fmt.currency(fee)}</span>
         <span class="text-sm text-gray"> (ID: ${id})</span>
       </div>`);
@@ -131,7 +131,7 @@ const Appointments = {
     if (!res.success || !res.data.length) {
       setHTML('available-dates-hint', `
         <div class="alert alert-warning" style="padding:8px 12px;margin-top:6px;font-size:12px">
-          ⚠️ No upcoming schedules found for this doctor.
+          <i data-lucide="alert-triangle" width="16" height="16" style="margin-right:4px;vertical-align:middle"></i> No upcoming schedules found for this doctor.
           Ask admin to add a schedule first.
         </div>`);
       return;
@@ -158,7 +158,7 @@ const Appointments = {
     const docId = $('appt-doctor-id')?.value;
     const date  = $('appt-date')?.value;
     if (!docId || !date) { setHTML('available-slots', ''); return; }
-    setHTML('available-slots', '<p class="text-sm text-gray mt-2">⏳ Loading available slots…</p>');
+    setHTML('available-slots', '<p class="text-sm text-gray mt-2"><i data-lucide="loader-2" width="16" height="16" class="spin" style="margin-right:4px;vertical-align:middle"></i> Loading available slots…</p>');
     const res = await Api.getQ('/appointments/slots/available', { doctor_id: docId, date });
     if (!res.success || !res.data.length) {
       setHTML('available-slots', `
@@ -246,7 +246,7 @@ const Appointments = {
     const btn = $('btn-complete-appt');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
     const res = await Api.put(`/appointments/${id}/complete`, { diagnosis, treatment, notes });
-    if (btn) { btn.disabled = false; btn.textContent = '✔ Complete & Save Record'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="check-circle" width="16" height="16" style="margin-right:4px;vertical-align:middle"></i> Complete & Save Record'; if (window.lucide) window.lucide.createIcons(); }
     if (res.success) {
       Toast.success('Appointment completed — medical record created');
       Modal.close('complete-modal');

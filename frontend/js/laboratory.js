@@ -40,9 +40,9 @@ const Laboratory = {
         <td>
           <div style="display:flex;gap:5px;flex-wrap:wrap">
             <button class="btn btn-outline btn-sm" onclick="Laboratory.viewOrder(${o.Order_ID})">View</button>
-            <button class="btn btn-ghost btn-sm"   onclick="Laboratory.printOrder(${o.Order_ID})" title="Print">🖨</button>
+            <button class="btn btn-ghost btn-sm"   onclick="Laboratory.printOrder(${o.Order_ID})" title="Print"><i data-lucide="printer" width="16" height="16"></i></button>
             ${o.Status!=='Completed'&&o.Status!=='Cancelled'&&canDo('addLabResult')?`<button class="btn btn-success btn-sm" onclick="Laboratory.openAddResult(${o.Order_ID})">+ Result</button>`:''}
-            ${o.Status==='Pending'&&canDo('createLabOrder')?`<button class="btn btn-ghost btn-sm text-danger" onclick="Laboratory.cancelOrder(${o.Order_ID})">✘</button>`:''}
+            ${o.Status==='Pending'&&canDo('createLabOrder')?`<button class="btn btn-ghost btn-sm text-danger" onclick="Laboratory.cancelOrder(${o.Order_ID})" title="Cancel Order"><i data-lucide="x-circle" width="16" height="16"></i></button>`:''}
           </div>
         </td>
       </tr>`).join('');
@@ -84,7 +84,7 @@ const Laboratory = {
                   <td>${r.Is_Abnormal?'<span class="badge badge-danger">Abnormal</span>':'<span class="badge badge-success">Normal</span>'}</td>
                   <td>${Fmt.datetime(r.Result_Date)}</td>
                   <td>${r.Remarks||'—'}</td>
-                  <td><button class="btn btn-ghost btn-sm text-danger" onclick="Laboratory.deleteResult(${r.Result_ID},${o.Order_ID})">🗑️</button></td>
+                  <td><button class="btn btn-ghost btn-sm text-danger" onclick="Laboratory.deleteResult(${r.Result_ID},${o.Order_ID})" title="Delete Result"><i data-lucide="trash-2" width="16" height="16"></i></button></td>
                 </tr>`).join('')}
             </tbody>
           </table>
@@ -108,7 +108,7 @@ const Laboratory = {
         @media print{button{display:none}}
       </style></head><body>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><h1>🏥 Hospital Management System</h1><div style="color:#64748b">Laboratory Report</div></div>
+        <div><h1>Hospital Management System</h1><div style="color:#64748b">Laboratory Report</div></div>
         <div style="text-align:right">
           <div style="font-size:22px;font-weight:700">ORDER #${o.Order_ID}</div>
           <div style="color:#64748b">${Fmt.datetime(o.Order_Date)}</div>
@@ -130,7 +130,7 @@ const Laboratory = {
             <td><strong>${r.Test_Name}</strong> (${r.Test_Code})</td>
             <td class="${r.Is_Abnormal?'abnormal':'normal'}">${r.Result} ${r.Unit||''}</td>
             <td>${r.Normal_Range||'—'}</td>
-            <td class="${r.Is_Abnormal?'abnormal':'normal'}">${r.Is_Abnormal?'⚠ ABNORMAL':'✓ Normal'}</td>
+            <td class="${r.Is_Abnormal?'abnormal':'normal'}">${r.Is_Abnormal?'<i data-lucide="alert-triangle" width="14" height="14" style="margin-right:4px;vertical-align:middle"></i> ABNORMAL':'<i data-lucide="check" width="14" height="14" style="margin-right:4px;vertical-align:middle"></i> Normal'}</td>
             <td>${r.Remarks||'—'}</td>
           </tr>`).join('')}
         ${!results.length?'<tr><td colspan="5" style="text-align:center;color:#94a3b8">No results yet</td></tr>':''}
@@ -179,7 +179,7 @@ const Laboratory = {
     setHTML('lab-patient-list', '');
     setHTML('lab-patient-display', `
       <div class="alert alert-success" style="padding:8px 12px;margin-top:6px">
-        ✅ <strong>${name}</strong> — ${phone}
+        <i data-lucide="check-circle" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> <strong>${name}</strong> — ${phone}
       </div>`);
 
     // Load this patient's completed appointments

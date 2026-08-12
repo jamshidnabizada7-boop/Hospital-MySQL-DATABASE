@@ -3,7 +3,7 @@ const fs = require('fs');
 
 async function fix() {
   try {
-    const hash = '$2b$10$CUU1P4PmnHHjb/Ce16x7W.bFq.l.SnWj47bR4vRHqAeIbk5egC98O'; // admin123
+    const hash = '$2b$10$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm'; // bcrypt hash for 'x'
     
     // Fix live DB
     await db.query('UPDATE App_User SET Password_Hash = ?', [hash]);

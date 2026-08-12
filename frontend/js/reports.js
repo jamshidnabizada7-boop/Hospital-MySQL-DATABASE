@@ -28,15 +28,15 @@ const Reports = {
       html += `
         <div class="stats-grid mb-4">
           <div class="stat-card">
-            <div class="stat-icon green">💰</div>
+            <div class="stat-icon green"><i data-lucide="circle-dollar-sign" width="24" height="24"></i></div>
             <div class="stat-body"><div class="stat-value">${Fmt.currency(s.total_collected||0)}</div><div class="stat-label">Total Collected</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon blue">🔄</div>
+            <div class="stat-icon blue"><i data-lucide="repeat" width="24" height="24"></i></div>
             <div class="stat-body"><div class="stat-value">${s.total_transactions||0}</div><div class="stat-label">Transactions</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon amber">📊</div>
+            <div class="stat-icon amber"><i data-lucide="bar-chart-3" width="24" height="24"></i></div>
             <div class="stat-body"><div class="stat-value">${Fmt.currency(s.avg_transaction||0)}</div><div class="stat-label">Avg Transaction</div></div>
           </div>
         </div>`;
@@ -101,7 +101,7 @@ const Reports = {
       if (inv.low_stock?.length) {
         html += `<div class="card mb-4">
           <div class="card-header">
-            <div class="card-title">⚠️ Low Stock Alert (${inv.low_stock.length})</div>
+            <div class="card-title"><i data-lucide="alert-triangle" width="18" height="18" style="margin-right:6px;vertical-align:middle;color:#f59e0b"></i> Low Stock Alert (${inv.low_stock.length})</div>
           </div>
           <div class="table-wrap"><table>
             <thead><tr><th>Medicine</th><th>Pharmacy</th><th>In Stock</th><th>Reorder Level</th><th>Deficit</th></tr></thead>
@@ -120,7 +120,7 @@ const Reports = {
       if (inv.expiring?.length) {
         html += `<div class="card mb-4">
           <div class="card-header">
-            <div class="card-title">⏳ Medicines Expiring in 90 Days (${inv.expiring.length})</div>
+            <div class="card-title"><i data-lucide="clock" width="18" height="18" style="margin-right:6px;vertical-align:middle;color:#3b82f6"></i> Medicines Expiring in 90 Days (${inv.expiring.length})</div>
           </div>
           <div class="table-wrap"><table>
             <thead><tr><th>Medicine</th><th>Pharmacy</th><th>Batch</th><th>Expiry</th><th>Days Left</th><th>Qty</th></tr></thead>

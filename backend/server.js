@@ -2,10 +2,10 @@
  * server.js — Hospital Management System API
  * Node.js + Express + MySQL 8.0
  */
-require('dotenv').config();
+const path    = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors    = require('cors');
-const path    = require('path');
 
 const app = express();
 
@@ -22,6 +22,7 @@ app.use('/api/auth',        require('./routes/auth'));
 app.use('/api/dashboard',   require('./routes/dashboard'));
 app.use('/api/patients',    require('./routes/patients'));
 app.use('/api/doctors',     require('./routes/doctors'));
+app.use('/api/employees',   require('./routes/employees'));
 app.use('/api/appointments',require('./routes/appointments'));
 app.use('/api/billing',     require('./routes/billing'));
 app.use('/api/pharmacy',    require('./routes/pharmacy'));

@@ -6,6 +6,7 @@
  * Others:       read only (for booking)
  */
 const router = require('express').Router();
+const bcrypt = require('bcryptjs');
 const db     = require('../db');
 const { authenticate, adminOr, ROLES } = require('../middleware/auth');
 
@@ -73,18 +74,68 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/doctors — Admin only
 router.post('/', authenticate, adminOr(), async (req, res) => {
   const { dept_id, spec_id, first_name, last_name, gender, date_of_birth,
-          license_number, qualification, experience_years, consultation_fee, phone, email } = req.body;
+          license_number, qualification, experience_years, consultation_fee, phone, email,
+          new_password, password } = req.body;
   if (!first_name || !last_name || !dept_id || !spec_id || !license_number || !phone || !email)
     return res.status(400).json({ success:false, message:'Required: first_name, last_name, dept_id, spec_id, license_number, phone, email' });
+  
+  const conn = await db.getConnection();
   try {
-    const [result] = await db.query(`
-      INSERT INTO Doctor(Dept_ID,Spec_ID,First_Name,Last_Name,Gender,Date_Of_Birth,
-        License_Number,Qualification,Experience_Years,Consultation_Fee,Phone,Email)
-      VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [dept_id,spec_id,first_name,last_name,gender||'Male',date_of_birth||'1980-01-01',
-       license_number,qualification||'',experience_years||0,consultation_fee||0,phone,email]);
-    res.status(201).json({ success:true, id:result.insertId, message:'Doctor added' });
-  } catch (err) { res.status(500).json({ success:false, message:err.message }); }
+    await conn.beginTransaction();
+
+    // 1. Get Role_ID for Doctor
+    const [roleRows] = await conn.query('SELECT Role_ID FROM Role WHERE Role_Name = ?', [ROLES.DOCTOR]);
+    if (!roleRows.length) throw new Error('Doctor role not found in database');
+    const roleId = roleRows[0].Role_ID;
+
+    // 2. Generate username and hash custom password
+    let baseUsername = `${first_name.toLowerCase()}.${last_name.toLowerCase()}`.replace(/[^a-z0-9.]/g, '');
+    let username = baseUsername;
+    let userSuffix = 1;
+    
+    // Ensure username uniqueness
+    while (true) {
+      const [existingUser] = await conn.query('SELECT User_ID FROM App_User WHERE Username = ?', [username]);
+      if (!existingUser.length) break;
+      username = `${baseUsername}${userSuffix}`;
+      userSuffix++;
+    }
+
+    const customPassword = new_password || password;
+    const finalPassword = (customPassword && customPassword.trim()) ? customPassword.trim() : 'admin123';
+    const passwordHash = bcrypt.hashSync(finalPassword, 10);
+    const fullName = `${first_name} ${last_name}`;
+
+    // 3. Insert into App_User
+    const [userResult] = await conn.query(`
+      INSERT INTO App_User(Role_ID, Username, Password_Hash, Full_Name, Email, Phone)
+      VALUES(?, ?, ?, ?, ?, ?)`,
+      [roleId, username, passwordHash, fullName, email, phone]
+    );
+    const userId = userResult.insertId;
+
+    // 4. Insert into Doctor with the User_ID
+    const [doctorResult] = await conn.query(`
+      INSERT INTO Doctor(User_ID, Dept_ID, Spec_ID, First_Name, Last_Name, Gender, Date_Of_Birth,
+        License_Number, Qualification, Experience_Years, Consultation_Fee, Phone, Email)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [userId, dept_id, spec_id, first_name, last_name, gender||'Male', date_of_birth||'1980-01-01',
+       license_number, qualification||'', experience_years||0, consultation_fee||0, phone, email]
+    );
+
+    await conn.commit();
+    res.status(201).json({ 
+      success: true, 
+      id: doctorResult.insertId, 
+      message: 'Doctor added',
+      credentials: { username, password: 'admin123' }
+    });
+  } catch (err) { 
+    await conn.rollback();
+    res.status(500).json({ success:false, message:err.message }); 
+  } finally {
+    conn.release();
+  }
 });
 
 // PUT /api/doctors/:id — Admin can update any; Doctor can only update own profile

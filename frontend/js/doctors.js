@@ -59,8 +59,8 @@ const Doctors = {
         <td>
           <div style="display:flex;gap:6px">
             <button class="btn btn-outline btn-sm" onclick="Doctors.viewSchedule(${d.Doctor_ID},'Dr. ${d.First_Name} ${d.Last_Name}')">Schedule</button>
-            ${canDo('editDoctor') ? `<button class="btn btn-ghost btn-sm" onclick="Doctors.openEdit(${d.Doctor_ID})">✏️</button>` : ''}
-            ${canDo('deleteDoctor') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Doctors.delete(${d.Doctor_ID})">🗑️</button>` : ''}
+            ${canDo('editDoctor') ? `<button class="btn btn-ghost btn-sm" onclick="Doctors.openEdit(${d.Doctor_ID})" title="Edit"><i data-lucide="pencil" width="16" height="16"></i></button>` : ''}
+            ${canDo('deleteDoctor') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Doctors.delete(${d.Doctor_ID})" title="Delete"><i data-lucide="trash-2" width="16" height="16"></i></button>` : ''}
           </div>
         </td>
       </tr>`).join('');
@@ -213,7 +213,7 @@ const Doctors = {
     setHTML('schedule-doctor-list', '');
     setHTML('schedule-doctor-display', `
       <div class="alert alert-info" style="padding:8px 12px;margin-top:6px">
-        🩺 <strong>${name}</strong> — ${dept}
+        <i data-lucide="stethoscope" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> <strong>${name}</strong> — ${dept}
         <span class="text-sm text-gray"> (ID: ${id})</span>
       </div>`);
   },

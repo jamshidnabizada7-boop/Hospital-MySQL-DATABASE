@@ -34,9 +34,9 @@ const Billing = {
         <td>
           <div style="display:flex;gap:5px">
             <button class="btn btn-outline btn-sm" onclick="Billing.openDetail(${b.Bill_ID})">View</button>
-            <button class="btn btn-ghost btn-sm"   onclick="Billing.printBill(${b.Bill_ID})" title="Print">🖨</button>
+            <button class="btn btn-ghost btn-sm"   onclick="Billing.printBill(${b.Bill_ID})" title="Print"><i data-lucide="printer" width="16" height="16"></i></button>
             ${b.Bill_Status!=='Paid'&&b.Bill_Status!=='Cancelled'&&b.Bill_Status!=='Waived' && canDo('processPayment') ? `
-              <button class="btn btn-success btn-sm" onclick="Billing.openPayment(${b.Bill_ID},${b.Balance_Due})">💰 Pay</button>
+              <button class="btn btn-success btn-sm" onclick="Billing.openPayment(${b.Bill_ID},${b.Balance_Due})"><i data-lucide="credit-card" width="14" height="14" style="margin-right:4px;vertical-align:middle"></i> Pay</button>
             ` : ''}
           </div>
         </td>
@@ -131,7 +131,7 @@ const Billing = {
         @media print{button{display:none}}
       </style></head><body>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><h1>🏥 Hospital Management System</h1><div class="sub">Official Bill / Receipt</div></div>
+        <div><h1>Hospital Management System</h1><div class="sub">Official Bill / Receipt</div></div>
         <div style="text-align:right">
           <div style="font-size:22px;font-weight:700">BILL #${b.Bill_ID}</div>
           <div style="color:#64748b">${Fmt.date(b.Bill_Date)}</div>
@@ -185,7 +185,7 @@ const Billing = {
     const btn = $('btn-process-pay');
     if (btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
     const res = await Api.post(`/billing/${bill_id}/payment`, { amount, method, reference_no: ref });
-    if (btn) { btn.disabled = false; btn.textContent = '💰 Process Payment'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="credit-card" width="16" height="16" style="margin-right:4px;vertical-align:middle"></i> Process Payment'; if (window.lucide) window.lucide.createIcons(); }
     if (res.success) {
       Toast.success('Payment processed successfully');
       Modal.close('payment-modal');

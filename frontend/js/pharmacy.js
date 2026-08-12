@@ -22,7 +22,7 @@ const Pharmacy = {
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
         ${this.locations.map(p => `
           <div class="card" style="border-left:4px solid var(--primary)">
-            <div class="text-bold" style="font-size:15px;margin-bottom:6px">🏪 ${p.Pharmacy_Name}</div>
+            <div class="text-bold" style="font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:6px"><i data-lucide="store" width="18" height="18"></i> ${p.Pharmacy_Name}</div>
             <div class="text-sm text-gray">${p.Location||'—'}</div>
             <div class="text-sm text-gray">${p.Phone||''}</div>
           </div>`).join('')}
@@ -62,8 +62,8 @@ const Pharmacy = {
         <td>${m.Requires_Rx ? '<span class="badge badge-warning">Rx</span>' : '<span class="badge badge-success">OTC</span>'}</td>
         <td>
           <div style="display:flex;gap:5px">
-            ${canDo('editMedicine') ? `<button class="btn btn-ghost btn-sm" onclick="Pharmacy.openEditMedicine(${m.Medicine_ID})">✏️</button>` : ''}
-            ${canDo('editMedicine') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteMedicine(${m.Medicine_ID})">🗑️</button>` : ''}
+            ${canDo('editMedicine') ? `<button class="btn btn-ghost btn-sm" onclick="Pharmacy.openEditMedicine(${m.Medicine_ID})" title="Edit"><i data-lucide="pencil" width="16" height="16"></i></button>` : ''}
+            ${canDo('editMedicine') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteMedicine(${m.Medicine_ID})" title="Delete"><i data-lucide="trash-2" width="16" height="16"></i></button>` : ''}
           </div>
         </td>
       </tr>`).join('');
@@ -155,7 +155,7 @@ const Pharmacy = {
         <td>
           <div style="display:flex;gap:5px">
             ${canDo('updateStock') ? `<button class="btn btn-outline btn-sm" onclick="Pharmacy.openStockUpdate(${i.Inventory_ID},'${i.Medicine_Name}',${i.Quantity_In_Stock})">Update Stock</button>` : ''}
-            ${canDo('addInventory') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteInventory(${i.Inventory_ID})">🗑️</button>` : ''}
+            ${canDo('addInventory') ? `<button class="btn btn-ghost btn-sm text-danger" onclick="Pharmacy.deleteInventory(${i.Inventory_ID})" title="Delete"><i data-lucide="trash-2" width="16" height="16"></i></button>` : ''}
           </div>
         </td>
       </tr>`).join('');

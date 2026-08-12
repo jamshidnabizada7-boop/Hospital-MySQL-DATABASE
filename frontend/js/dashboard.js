@@ -19,40 +19,44 @@ const Dashboard = {
     setHTML('dash-stats', `
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon blue">👥</div>
+          <div class="stat-icon blue"><i data-lucide="users" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.total_patients)}</div><div class="stat-label">Total Patients</div></div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon green">🩺</div>
+          <div class="stat-icon green"><i data-lucide="stethoscope" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.active_doctors)}</div><div class="stat-label">Active Doctors</div></div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon blue">📅</div>
+          <div class="stat-icon blue"><i data-lucide="calendar" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.today_appointments)}</div><div class="stat-label">Today's Appointments</div></div>
         </div>
         ${(canDo('isAdmin') || canDo('processPayment')) ? `
         <div class="stat-card">
-          <div class="stat-icon amber">💰</div>
+          <div class="stat-icon amber"><i data-lucide="circle-dollar-sign" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.currency(s.today_revenue)}</div><div class="stat-label">Today's Revenue</div></div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon red">🧾</div>
+          <div class="stat-icon red"><i data-lucide="receipt" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.pending_bills)}</div><div class="stat-label">Pending Bills</div></div>
         </div>
         ` : ''}
         <div class="stat-card">
-          <div class="stat-icon purple">📋</div>
+          <div class="stat-icon purple"><i data-lucide="clipboard-list" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.scheduled_appointments)}</div><div class="stat-label">Scheduled</div></div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon teal">🔬</div>
+          <div class="stat-icon teal"><i data-lucide="microscope" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.lab_pending)}</div><div class="stat-label">Lab Pending</div></div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon red">⚠️</div>
+          <div class="stat-icon red"><i data-lucide="alert-triangle" style="width:24px;height:24px"></i></div>
           <div class="stat-body"><div class="stat-value">${Fmt.number(s.low_stock_alerts)}</div><div class="stat-label">Low Stock Alerts</div></div>
         </div>
       </div>`);
+    
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
   },
 
   renderRecentAppts(appts) {

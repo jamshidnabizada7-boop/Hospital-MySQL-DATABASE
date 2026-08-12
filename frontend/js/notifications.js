@@ -63,7 +63,7 @@ const Notifications = {
       if (res.pending_bills > 0) {
         sections.push(`
           <div class="notif-section">
-            <div class="notif-section-title">💰 Outstanding Bills</div>
+            <div class="notif-section-title"><i data-lucide="circle-dollar-sign" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> Outstanding Bills</div>
             ${(res.bills_detail||[]).slice(0,5).map(b => `
               <div class="notif-item" onclick="App.navigate('billing');Notifications.close()">
                 <div class="notif-item-title">${b.patient_name}</div>
@@ -77,7 +77,7 @@ const Notifications = {
       if (res.abnormal_labs > 0) {
         sections.push(`
           <div class="notif-section">
-            <div class="notif-section-title">🔬 Abnormal Lab Results</div>
+            <div class="notif-section-title"><i data-lucide="microscope" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> Abnormal Lab Results</div>
             ${(res.labs_detail||[]).slice(0,5).map(l => `
               <div class="notif-item notif-warning" onclick="App.navigate('laboratory');Notifications.close()">
                 <div class="notif-item-title">${l.patient_name} — ${l.Test_Name}</div>
@@ -91,7 +91,7 @@ const Notifications = {
       if (res.low_stock > 0) {
         sections.push(`
           <div class="notif-section">
-            <div class="notif-section-title">⚠️ Low Stock Alert</div>
+            <div class="notif-section-title"><i data-lucide="alert-triangle" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> Low Stock Alert</div>
             ${(res.stock_detail||[]).slice(0,4).map(s => `
               <div class="notif-item notif-danger" onclick="App.navigate('pharmacy');Notifications.close()">
                 <div class="notif-item-title">${s.Medicine_Name} ${s.Strength}</div>
@@ -105,7 +105,7 @@ const Notifications = {
       if (res.follow_ups > 0) {
         sections.push(`
           <div class="notif-section">
-            <div class="notif-section-title">📅 Follow-ups This Week</div>
+            <div class="notif-section-title"><i data-lucide="calendar" width="16" height="16" style="margin-right:6px;vertical-align:middle"></i> Follow-ups This Week</div>
             ${(res.followup_detail||[]).slice(0,4).map(f => `
               <div class="notif-item" onclick="App.navigate('patients');Notifications.close()">
                 <div class="notif-item-title">${f.Patient_Name}</div>
@@ -117,7 +117,7 @@ const Notifications = {
       if (!sections.length) {
         setHTML('notif-body', `
           <div style="padding:32px 16px;text-align:center;color:#94a3b8">
-            <div style="font-size:32px;margin-bottom:8px">✅</div>
+            <div style="margin-bottom:8px"><i data-lucide="check-circle-2" width="36" height="36" style="color:#22c55e"></i></div>
             <div style="font-weight:600">All clear!</div>
             <div style="font-size:12px;margin-top:4px">No pending notifications</div>
           </div>`);

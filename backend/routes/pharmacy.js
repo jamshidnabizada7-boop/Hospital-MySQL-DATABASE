@@ -194,7 +194,24 @@ router.post('/categories', authenticate, canWriteMeds, async (req, res) => {
       'INSERT INTO Medicine_Category(Category_Name,Description) VALUES(?,?)',
       [category_name, description||'']);
     res.status(201).json({ success:true, category_id:result.insertId });
-  } catch (err) { res.status(500).json({ success:false, message:err.message }); }
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY')
+      return res.status(409).json({ success:false, message:'Category with this name already exists' });
+    res.status(500).json({ success:false, message:err.message });
+  }
+});
+
+router.delete('/categories/:id', authenticate, canWriteMeds, async (req, res) => {
+  try {
+    const [result] = await db.query('DELETE FROM Medicine_Category WHERE Category_ID=?', [req.params.id]);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ success:false, message:'Category not found' });
+    res.json({ success:true, message:'Category deleted' });
+  } catch (err) {
+    if (err.code === 'ER_ROW_IS_REFERENCED_2')
+      return res.status(409).json({ success:false, message:'Cannot delete category in use by medicines' });
+    res.status(500).json({ success:false, message:err.message });
+  }
 });
 
 module.exports = router;

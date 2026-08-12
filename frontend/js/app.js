@@ -100,6 +100,7 @@ const App = {
       dashboard:    true,
       patients:     isAdmin || isReceptionist || isDoctor || isLabTech || isAccountant,
       doctors:      isAdmin || isReceptionist || isDoctor,
+      staff:        isAdmin,
       appointments: isAdmin || isReceptionist || isDoctor || isLabTech,
       billing:      isAdmin || isAccountant   || isDoctor || isReceptionist,
       pharmacy:     isAdmin || isPharmacist   || isDoctor,
@@ -124,6 +125,10 @@ const App = {
       editDoctor:       isAdmin || isDoctor,
       deleteDoctor:     isAdmin,
       addSchedule:      isAdmin || isDoctor,
+      // Staff
+      addStaff:         isAdmin,
+      editStaff:        isAdmin,
+      deleteStaff:      isAdmin,
       // Appointments
       bookAppointment:  isAdmin || isReceptionist,
       cancelAppointment:isAdmin || isReceptionist,
@@ -163,6 +168,7 @@ const App = {
       billing:      () => Billing.load(Billing.page),
       pharmacy:     () => { Pharmacy.loadMedicines(Pharmacy.page); Pharmacy.loadInventory(1); },
       laboratory:   () => Laboratory.load(Laboratory.page),
+      staff:        () => Staff.load(Staff.page),
       reports:      () => Reports.refresh(),
     };
     if (loaders[this.currentPage]) {
@@ -189,7 +195,7 @@ const App = {
     const titles = {
       dashboard:'Dashboard', patients:'Patients', doctors:'Doctors',
       appointments:'Appointments', billing:'Billing', pharmacy:'Pharmacy',
-      laboratory:'Laboratory', reports:'Reports',
+      laboratory:'Laboratory', staff:'Staff & Employees', reports:'Reports',
     };
     $('page-title').textContent = titles[page] || page;
 
@@ -201,6 +207,7 @@ const App = {
       billing:      () => Billing.load(),
       pharmacy:     () => Pharmacy.load(),
       laboratory:   () => Laboratory.load(),
+      staff:        () => Staff.load(),
       reports:      () => Reports.load(),
     };
     if (loaders[page]) loaders[page]();

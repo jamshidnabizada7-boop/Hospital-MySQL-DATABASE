@@ -5,9 +5,18 @@
   "scripts": {
     "setup": "node setup.js",
     "start": "cd backend && node server.js",
-    "dev":   "cd backend && node --watch server.js"
+    "dev": "cd backend && node --watch server.js"
   },
-  "keywords": ["hospital", "mysql", "nodejs", "express", "hms"],
+  "keywords": [
+    "hospital",
+    "mysql",
+    "nodejs",
+    "express",
+    "hms"
+  ],
   "author": "HMS Project",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer-core": "^25.6.0"
+  }
 }

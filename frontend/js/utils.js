@@ -7,10 +7,11 @@ const Toast = {
   show(msg, type = 'info', duration = 3500) {
     const c = document.getElementById('toast-container');
     const t = document.createElement('div');
-    const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+    const icons = { success:'<i data-lucide="check-circle" width="16" height="16" style="color:#22c55e"></i>', error:'<i data-lucide="alert-circle" width="16" height="16" style="color:#ef4444"></i>', warning:'<i data-lucide="alert-triangle" width="16" height="16" style="color:#f59e0b"></i>', info:'<i data-lucide="info" width="16" height="16" style="color:#3b82f6"></i>' };
     t.className = `toast toast-${type}`;
     t.innerHTML = `<span>${icons[type]||''}</span><span>${msg}</span>`;
     c.appendChild(t);
+    if (window.lucide) window.lucide.createIcons();
     setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(120%)';
                        t.style.transition='.3s ease';
                        setTimeout(()=>t.remove(),320); }, duration);
@@ -56,7 +57,7 @@ function el(tag, cls, html) {
 function show(id) { const e=$(id); if(e) e.classList.remove('hidden'); }
 function hide(id) { const e=$(id); if(e) e.classList.add('hidden'); }
 
-function setHTML(id, html) { const e=$(id); if(e) e.innerHTML = html; }
+function setHTML(id, html) { const e=$(id); if(e) { e.innerHTML = html; if (window.lucide) window.lucide.createIcons(); } }
 
 function loading(id) {
   setHTML(id, '<div class="loading-block"><div class="spinner"></div></div>');
