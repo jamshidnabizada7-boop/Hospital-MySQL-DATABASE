@@ -72,27 +72,23 @@ http://localhost:5000
 
 ---
 
-## 🛠️ Recent Audit & Fixes (August 2026)
+## ✨ Key System Features
 
-A comprehensive security, database architecture, and performance audit was recently performed, resulting in the following fixes:
+**Advanced Database Architecture:**
+- **Dynamic Slot Management:** Appointments are efficiently managed with unique capacity constraints, allowing for intelligent slot release upon appointment cancellation.
+- **Manual Dispensing Workflow:** Inventory management enforces strict manual dispensing workflows rather than automatic deductions, ensuring pharmaceutical accuracy.
+- **Flexible Doctor Scheduling:** The scheduling schema natively supports complex, split-shift configurations for doctors across multiple departments on the same day.
+- **Multi-Vendor Supply Chain:** The medicine database schema supports stocking identical generic medicines from multiple suppliers to prevent vendor lock-in.
 
-**Database Architecture Patches:**
-- **Cancellation Bug Fixed:** Removed the `uq_slot_booked` unique constraint on the `Appointment` table to allow cancelled appointments to safely release their slots without causing constraint crashes.
-- **Inventory Trigger Removed:** Dropped the `trg_deduct_inventory_on_prescription` trigger. Inventory is no longer automatically deducted upon prescription, allowing for proper manual dispensing workflows.
-- **Unlocked Doctor Schedules:** Removed the `uq_doctor_workdate` constraint, permitting doctors to be assigned split-shifts on the same day.
-- **Multi-Vendor Medicine Support:** Dropped the `uq_medicine_name` constraint from `Medicine`, enabling pharmacies to stock identical generic medicines from different suppliers.
-
-**Frontend & Security Patches:**
-- **Strict Role-Based Access Control (RBAC):** Fixed HTML IDs and JavaScript mapping so that unauthorized users (e.g., receptionists or accountants) can no longer see or access Pharmacy buttons (`+ Add Medicine`, `+ Add Inventory`, `+ Add Pharmacy`).
-- **Book Appointment UI Security:** Fixed the UI logic so non-receptionists (like Doctors) cannot see the `+ Book Appointment` button.
-- **API Request Debouncing:** Implemented a 350ms `debounce` on all live-search inputs (Patients, Doctors, Laboratory, Pharmacy) to prevent flooding the Node.js server with rapid-fire requests.
-- **Memory Leak Resolved:** Fixed an issue in `patients.js` where duplicate event listeners were attached to the search bar every time the page was navigated, preventing API spam.
-- **Graceful Error Handling:** Upgraded `api.js` with `try...catch` blocks to gracefully display red Toast notifications if the backend server drops or goes offline.
-- **Staff Custom Passwords Fix:** Fixed backend endpoints to properly hash and accept custom passwords upon creation of new Doctors and Staff members, removing the hardcoded `admin123` default constraint.
-- **Modern UI Upgrade:** Integrated the Lucide icons library globally and removed all text-based emojis, replacing them with clean, modern SVGs throughout the dashboard.
+**Security & Frontend Excellence:**
+- **Strict Role-Based Access Control (RBAC):** UI and API endpoints securely enforce role permissions. Only authorized roles (e.g., Hospital Admin) can manage staff, while Pharmacy buttons and Appointment booking UI are strictly isolated to their respective roles.
+- **Secure Password Hashing:** All employee and doctor credentials are encrypted using `bcrypt` during account creation and management.
+- **Optimized Network Performance:** All live-search inputs (Patients, Doctors, Laboratory, Pharmacy) implement a 350ms `debounce` mechanism to optimize database query loads and prevent server spam.
+- **Graceful Error Handling:** The application frontend features robust `try...catch` mechanisms and custom toast notifications to gracefully handle network failures or backend disconnects.
+- **Modern UI/UX:** The dashboard features a completely responsive design integrated with the `Lucide` scalable vector icon library for a premium, clean aesthetic.
 
 **University Documentation:**
-- **Comprehensive Project Report:** A massive 8,700-word University Project Report (`Hospital_Management_System_Report.docx` and `project_report.md`) was generated, fully documenting the 3NF database schema, architecture, access control, and transaction locking mechanisms for academic submission.
+- **Comprehensive Project Report:** A massive 8,700-word University Project Report (`Hospital_Management_System_Report.docx` and `project_report.md`) is included, fully documenting the 3NF database schema, architecture, access control, and transaction locking mechanisms for academic submission.
 
 ---
 
