@@ -68,7 +68,7 @@ http://localhost:5000
 | `pharmacist1` | Pharmacist | `admin123` |
 | `accountant1` | Accountant | `admin123` |
 
-> 🔒 **Security Note:** All sample accounts have their passwords securely hashed in the database. The password for all demo accounts is strictly **`admin123`**.
+> 🔒 **Security Note:** All sample accounts have their passwords securely hashed in the database. The password for the built-in demo accounts is strictly **`admin123`**. Newly created staff and doctor accounts can be assigned custom passwords securely from the admin dashboard.
 
 ---
 
@@ -88,6 +88,11 @@ A comprehensive security, database architecture, and performance audit was recen
 - **API Request Debouncing:** Implemented a 350ms `debounce` on all live-search inputs (Patients, Doctors, Laboratory, Pharmacy) to prevent flooding the Node.js server with rapid-fire requests.
 - **Memory Leak Resolved:** Fixed an issue in `patients.js` where duplicate event listeners were attached to the search bar every time the page was navigated, preventing API spam.
 - **Graceful Error Handling:** Upgraded `api.js` with `try...catch` blocks to gracefully display red Toast notifications if the backend server drops or goes offline.
+- **Staff Custom Passwords Fix:** Fixed backend endpoints to properly hash and accept custom passwords upon creation of new Doctors and Staff members, removing the hardcoded `admin123` default constraint.
+- **Modern UI Upgrade:** Integrated the Lucide icons library globally and removed all text-based emojis, replacing them with clean, modern SVGs throughout the dashboard.
+
+**University Documentation:**
+- **Comprehensive Project Report:** A massive 8,700-word University Project Report (`Hospital_Management_System_Report.docx` and `project_report.md`) was generated, fully documenting the 3NF database schema, architecture, access control, and transaction locking mechanisms for academic submission.
 
 ---
 
@@ -99,6 +104,8 @@ Hospital MYSQL Databse/
 ├── setup.js                         # Interactive setup wizard
 ├── package.json
 ├── README.md
+├── project_report.md                # Comprehensive University Report (Markdown)
+├── Hospital_Management_System_Report.docx # Comprehensive University Report (Word format)
 │
 ├── backend/                         # Node.js + Express API
 │   ├── server.js                    # Main server entry point
