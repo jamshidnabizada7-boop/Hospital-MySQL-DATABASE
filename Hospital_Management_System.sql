@@ -343,7 +343,8 @@ CREATE TABLE Medicine (
 
     CONSTRAINT fk_med_category   FOREIGN KEY (Category_ID) REFERENCES Medicine_Category(Category_ID)
                                  ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT chk_unit_price    CHECK (Unit_Price >= 0)
+    CONSTRAINT chk_unit_price    CHECK (Unit_Price >= 0),
+    CONSTRAINT chk_medicine_strength CHECK (Strength REGEXP '^[0-9]+(\\.[0-9]+)?(/[0-9]+(\\.[0-9]+)?)?[a-zA-Z%]+$')
 ) ENGINE=InnoDB COMMENT='Medicine / drug master catalog';
 
 -- Table: Pharmacy
@@ -356,7 +357,8 @@ CREATE TABLE Pharmacy (
     Is_Active     TINYINT(1)    NOT NULL DEFAULT 1,
     Created_At    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_pharmacy      PRIMARY KEY (Pharmacy_ID),
-    CONSTRAINT uq_pharmacy_name UNIQUE      (Pharmacy_Name)
+    CONSTRAINT uq_pharmacy_name UNIQUE      (Pharmacy_Name),
+    CONSTRAINT chk_pharmacy_loc CHECK       (TRIM(Location) <> '')
 ) ENGINE=InnoDB COMMENT='Pharmacy locations';
 
 -- Table: Inventory
@@ -1152,16 +1154,16 @@ INSERT INTO Role(Role_Name, Description) VALUES
 
 -- App Users (passwords are bcrypt hash for 'x')
 INSERT INTO App_User(Role_ID, Username, Password_Hash, Full_Name, Email, Phone) VALUES
-(1, 'admin',        ', 'System Admin'b1, 'admin',        0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'System Admin',         'admin@hospital.com',       '0700000001'),
-(2, 'receptionist1',', 'Sara Ahmed'b2, 'receptionist1',0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Sara Ahmed',           'sara@hospital.com',        '0700000002'),
-(3, 'dr_kamal',     ', 'Dr. Kamal Haidari'b3, 'dr_kamal',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Kamal Haidari',    'kamal@hospital.com',       '0700000003'),
-(3, 'dr_layla',     ', 'Dr. Layla Noori'b3, 'dr_layla',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Layla Noori',      'layla@hospital.com',       '0700000004'),
-(3, 'dr_omar',      ', 'Dr. Omar Yousuf'b3, 'dr_omar',      0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Omar Yousuf',      'omar@hospital.com',        '0700000005'),
-(4, 'labtech1',     ', 'Nadia Karimi'b4, 'labtech1',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Nadia Karimi',         'nadia@hospital.com',       '0700000006'),
-(5, 'pharmacist1',  ', 'Khalid Wardak'b5, 'pharmacist1',  0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Khalid Wardak',        'khalid@hospital.com',      '0700000007'),
-(6, 'accountant1',  ', 'Roya Ahmadi'b6, 'accountant1',  0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Roya Ahmadi',          'roya@hospital.com',        '0700000008'),
-(3, 'dr_fatima',    ', 'Dr. Fatima Sultani'b3, 'dr_fatima',    0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Fatima Sultani',   'fatima@hospital.com',      '0700000009'),
-(3, 'dr_rahul',     ', 'Dr. Rahul Sharma'b3, 'dr_rahul',     0$OqpMNnoXA2OG6V89RVkVZe6Ct4FsN64Jlh.na.NNm1WcBLN/aOTvm', 'Dr. Rahul Sharma',     'rahul@hospital.com',       '0700000010');
+(1, 'admin',        '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'System Admin',         'admin@hospital.com',       '0700000001'),
+(2, 'receptionist1','$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Sara Ahmed',           'sara@hospital.com',        '0700000002'),
+(3, 'dr_kamal',     '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Dr. Kamal Haidari',    'kamal@hospital.com',       '0700000003'),
+(3, 'dr_layla',     '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Dr. Layla Noori',      'layla@hospital.com',       '0700000004'),
+(3, 'dr_omar',      '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Dr. Omar Yousuf',      'omar@hospital.com',        '0700000005'),
+(4, 'labtech1',     '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Nadia Karimi',         'nadia@hospital.com',       '0700000006'),
+(5, 'pharmacist1',  '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Khalid Wardak',        'khalid@hospital.com',      '0700000007'),
+(6, 'accountant1',  '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Roya Ahmadi',          'roya@hospital.com',        '0700000008'),
+(3, 'dr_fatima',    '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Dr. Fatima Sultani',   'fatima@hospital.com',      '0700000009'),
+(3, 'dr_rahul',     '$2b$10$8vQXtiMyIKf275ky4MG3yeBeaYuZyKewFALyIPnsua60lRkududMK', 'Dr. Rahul Sharma',     'rahul@hospital.com',       '0700000010');
 
 -- Specializations
 INSERT INTO Specialization(Spec_Name, Description) VALUES
@@ -1805,6 +1807,179 @@ BEGIN
     VALUES('Bill', OLD.Bill_ID, 'UPDATE',
            JSON_OBJECT('Bill_Status', OLD.Bill_Status, 'Amount_Paid', OLD.Amount_Paid, 'Balance_Due', OLD.Balance_Due),
            JSON_OBJECT('Bill_Status', NEW.Bill_Status, 'Amount_Paid', NEW.Amount_Paid, 'Balance_Due', NEW.Balance_Due));
+END$$
+
+-- Trigger: Validate Patient DOB
+CREATE TRIGGER trg_validate_patient_dob_insert
+BEFORE INSERT ON Patient
+FOR EACH ROW
+BEGIN
+    IF NEW.Date_Of_Birth > CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of Birth cannot be in the future.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_validate_patient_dob_update
+BEFORE UPDATE ON Patient
+FOR EACH ROW
+BEGIN
+    IF NEW.Date_Of_Birth > CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of Birth cannot be in the future.';
+    END IF;
+END$$
+
+-- Trigger: Validate Doctor DOB
+CREATE TRIGGER trg_validate_doctor_dob_insert
+BEFORE INSERT ON Doctor
+FOR EACH ROW
+BEGIN
+    IF NEW.Date_Of_Birth > CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of Birth cannot be in the future.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_validate_doctor_dob_update
+BEFORE UPDATE ON Doctor
+FOR EACH ROW
+BEGIN
+    IF NEW.Date_Of_Birth > CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of Birth cannot be in the future.';
+    END IF;
+END$$
+
+-- Trigger: Validate Employee Age 18+
+CREATE TRIGGER trg_validate_employee_age_insert
+BEFORE INSERT ON Employee
+FOR EACH ROW
+BEGIN
+    IF TIMESTAMPDIFF(YEAR, NEW.Date_Of_Birth, NEW.Hire_Date) < 18 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Employee must be at least 18 years old at the time of hiring.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_validate_employee_age_update
+BEFORE UPDATE ON Employee
+FOR EACH ROW
+BEGIN
+    IF TIMESTAMPDIFF(YEAR, NEW.Date_Of_Birth, NEW.Hire_Date) < 18 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Employee must be at least 18 years old at the time of hiring.';
+    END IF;
+END$$
+
+-- Trigger: Validate Doctor_Schedule Work_Date
+CREATE TRIGGER trg_validate_schedule_date_insert
+BEFORE INSERT ON Doctor_Schedule
+FOR EACH ROW
+BEGIN
+    IF NEW.Work_Date < CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot create a schedule in the past.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_validate_schedule_date_update
+BEFORE UPDATE ON Doctor_Schedule
+FOR EACH ROW
+BEGIN
+    IF NEW.Work_Date < CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot update a schedule to the past.';
+    END IF;
+END$$
+
+-- Trigger: Prevent Duplicate Appointments
+CREATE TRIGGER trg_prevent_duplicate_appt_insert
+BEFORE INSERT ON Appointment
+FOR EACH ROW
+BEGIN
+    DECLARE v_count INT;
+    SELECT COUNT(*) INTO v_count
+    FROM Appointment a
+    JOIN Appointment_Slot sl ON a.Slot_ID = sl.Slot_ID
+    JOIN Doctor_Schedule ds ON sl.Schedule_ID = ds.Schedule_ID
+    WHERE a.Patient_ID = NEW.Patient_ID
+      AND a.Appointment_Status != 'Cancelled'
+      AND ds.Work_Date = (
+          SELECT ds2.Work_Date
+          FROM Appointment_Slot sl2
+          JOIN Doctor_Schedule ds2 ON sl2.Schedule_ID = ds2.Schedule_ID
+          WHERE sl2.Slot_ID = NEW.Slot_ID
+      )
+      AND ds.Doctor_ID = (
+          SELECT ds2.Doctor_ID
+          FROM Appointment_Slot sl2
+          JOIN Doctor_Schedule ds2 ON sl2.Schedule_ID = ds2.Schedule_ID
+          WHERE sl2.Slot_ID = NEW.Slot_ID
+      );
+      
+    IF v_count > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Patient already has an appointment with this doctor on this date.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_prevent_duplicate_appt_update
+BEFORE UPDATE ON Appointment
+FOR EACH ROW
+BEGIN
+    DECLARE v_count INT;
+    IF NEW.Appointment_Status != 'Cancelled' AND (NEW.Slot_ID != OLD.Slot_ID OR NEW.Patient_ID != OLD.Patient_ID) THEN
+        SELECT COUNT(*) INTO v_count
+        FROM Appointment a
+        JOIN Appointment_Slot sl ON a.Slot_ID = sl.Slot_ID
+        JOIN Doctor_Schedule ds ON sl.Schedule_ID = ds.Schedule_ID
+        WHERE a.Patient_ID = NEW.Patient_ID
+          AND a.Appointment_ID != NEW.Appointment_ID
+          AND a.Appointment_Status != 'Cancelled'
+          AND ds.Work_Date = (
+              SELECT ds2.Work_Date
+              FROM Appointment_Slot sl2
+              JOIN Doctor_Schedule ds2 ON sl2.Schedule_ID = ds2.Schedule_ID
+              WHERE sl2.Slot_ID = NEW.Slot_ID
+          )
+          AND ds.Doctor_ID = (
+              SELECT ds2.Doctor_ID
+              FROM Appointment_Slot sl2
+              JOIN Doctor_Schedule ds2 ON sl2.Schedule_ID = ds2.Schedule_ID
+              WHERE sl2.Slot_ID = NEW.Slot_ID
+          );
+          
+        IF v_count > 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Patient already has an appointment with this doctor on this date.';
+        END IF;
+    END IF;
+END$$
+
+-- Trigger: Validate Inventory Pricing
+CREATE TRIGGER trg_validate_inventory_price_insert
+BEFORE INSERT ON Inventory
+FOR EACH ROW
+BEGIN
+    DECLARE v_unit_price DECIMAL(10,2);
+    SELECT Unit_Price INTO v_unit_price FROM Medicine WHERE Medicine_ID = NEW.Medicine_ID;
+    IF NEW.Unit_Cost > v_unit_price THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Inventory Unit_Cost cannot exceed Medicine Unit_Price.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_validate_inventory_price_update
+BEFORE UPDATE ON Inventory
+FOR EACH ROW
+BEGIN
+    DECLARE v_unit_price DECIMAL(10,2);
+    SELECT Unit_Price INTO v_unit_price FROM Medicine WHERE Medicine_ID = NEW.Medicine_ID;
+    IF NEW.Unit_Cost > v_unit_price THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Inventory Unit_Cost cannot exceed Medicine Unit_Price.';
+    END IF;
+END$$
+
+-- Trigger: Auto-Pay Zero Amount Bills
+CREATE TRIGGER trg_autopay_zero_bill_insert
+BEFORE INSERT ON Bill
+FOR EACH ROW
+BEGIN
+    IF NEW.Total_Amount = 0.00 THEN
+        SET NEW.Bill_Status = 'Paid';
+        SET NEW.Amount_Paid = 0.00;
+        SET NEW.Balance_Due = 0.00;
+    END IF;
 END$$
 
 DELIMITER ;

@@ -57,6 +57,8 @@ router.post('/', authenticate, canWrite, async (req, res) => {
           phone, email, address, emergency_name, emergency_phone, insurance_no } = req.body;
   if (!first_name || !last_name || !phone || !date_of_birth)
     return res.status(400).json({ success:false, message:'first_name, last_name, phone, date_of_birth required' });
+  if (date_of_birth && new Date(date_of_birth) > new Date())
+    return res.status(400).json({ success:false, message:'Date of Birth cannot be in the future' });
   try {
     const [result] = await db.query(`
       INSERT INTO Patient(First_Name,Last_Name,Gender,Date_Of_Birth,Blood_Group,
@@ -72,6 +74,8 @@ router.post('/', authenticate, canWrite, async (req, res) => {
 router.put('/:id', authenticate, canWrite, async (req, res) => {
   const { first_name, last_name, gender, date_of_birth, blood_group,
           phone, email, address, emergency_name, emergency_phone, insurance_no } = req.body;
+  if (date_of_birth && new Date(date_of_birth) > new Date())
+    return res.status(400).json({ success:false, message:'Date of Birth cannot be in the future' });
   try {
     await db.query(`
       UPDATE Patient SET First_Name=?,Last_Name=?,Gender=?,Date_Of_Birth=?,Blood_Group=?,

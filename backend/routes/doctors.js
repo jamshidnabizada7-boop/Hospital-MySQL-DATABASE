@@ -12,12 +12,13 @@ const { authenticate, adminOr, ROLES } = require('../middleware/auth');
 
 // GET /api/doctors
 router.get('/', authenticate, async (req, res) => {
-  const { search = '', dept_id, page = 1, limit = 20 } = req.query;
+  const { search = '', dept_id, spec_id, page = 1, limit = 20 } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
   const like   = `%${search}%`;
   let where = `d.Is_Active=1 AND (d.First_Name LIKE ? OR d.Last_Name LIKE ? OR d.Email LIKE ?)`;
   const params = [like,like,like];
   if (dept_id) { where += ' AND d.Dept_ID=?'; params.push(dept_id); }
+  if (spec_id) { where += ' AND d.Spec_ID=?'; params.push(spec_id); }
   try {
     const [rows] = await db.query(`
       SELECT d.Doctor_ID, d.First_Name, d.Last_Name, d.Gender, d.Date_Of_Birth,
@@ -78,6 +79,8 @@ router.post('/', authenticate, adminOr(), async (req, res) => {
           new_password, password } = req.body;
   if (!first_name || !last_name || !dept_id || !spec_id || !license_number || !phone || !email)
     return res.status(400).json({ success:false, message:'Required: first_name, last_name, dept_id, spec_id, license_number, phone, email' });
+  if (date_of_birth && new Date(date_of_birth) > new Date())
+    return res.status(400).json({ success:false, message:'Date of Birth cannot be in the future' });
   
   const conn = await db.getConnection();
   try {
@@ -147,6 +150,8 @@ router.put('/:id', authenticate, adminOr(ROLES.DOCTOR), async (req, res) => {
   const { dept_id, spec_id, first_name, last_name, gender, date_of_birth,
           license_number, qualification, experience_years, consultation_fee,
           phone, email, is_active } = req.body;
+  if (date_of_birth && new Date(date_of_birth) > new Date())
+    return res.status(400).json({ success:false, message:'Date of Birth cannot be in the future' });
 
   // Doctor cannot change dept/spec/license/active status
   const isDoctor = req.user.role === ROLES.DOCTOR;
@@ -234,6 +239,9 @@ router.post('/:id/schedule', authenticate, adminOr(ROLES.DOCTOR), async (req, re
     return res.status(403).json({ success:false, message:'You can only manage your own schedule' });
 
   const { work_date, start_time, end_time, slot_duration_min=30, notes='' } = req.body;
+  if (new Date(work_date) < new Date(new Date().toDateString())) {
+    return res.status(400).json({ success:false, message:'Cannot create a schedule in the past' });
+  }
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();

@@ -9,7 +9,9 @@ const Doctors = {
     this.page = page;
     loading('doctors-table');
     await this.loadMeta();
-    const res = await Api.getQ('/doctors', { search: this.search, page, limit: 15 });
+    const deptId = $('doctors-dept-filter') ? $('doctors-dept-filter').value : '';
+    const specId = $('doctors-spec-filter') ? $('doctors-spec-filter').value : '';
+    const res = await Api.getQ('/doctors', { search: this.search, dept_id: deptId, spec_id: specId, page, limit: 15 });
     if (!res.success) { Toast.error(res.message); return; }
     this.render(res);
   },
@@ -27,10 +29,16 @@ const Doctors = {
   },
 
   populateDeptFilter() {
-    const sel = $('doctors-dept-filter');
-    if (!sel) return;
-    sel.innerHTML = `<option value="">All Departments</option>` +
-      this.departments.map(d=>`<option value="${d.Dept_ID}">${d.Dept_Name}</option>`).join('');
+    const selDept = $('doctors-dept-filter');
+    const selSpec = $('doctors-spec-filter');
+    if (selDept) {
+      selDept.innerHTML = `<option value="">All Departments</option>` +
+        this.departments.map(d=>`<option value="${d.Dept_ID}">${d.Dept_Name}</option>`).join('');
+    }
+    if (selSpec) {
+      selSpec.innerHTML = `<option value="">All Specializations</option>` +
+        this.specializations.map(s=>`<option value="${s.Spec_ID}">${s.Spec_Name}</option>`).join('');
+    }
   },
 
   render({ data, total, page, limit=15 }) {

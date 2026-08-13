@@ -1,1 +1,0 @@
-const fs = require('fs'); let sql = fs.readFileSync('../Hospital_Management_System.sql', 'utf8'); sql = sql.replace(/\.UsNAvUcG4kjoJPDeDKL1h\/f6J9ibS5K/g, '\\\.UsNAvUcG4kjoJPDeDKL1h/f6J9ibS5K'); fs.writeFileSync('../Hospital_Management_System.sql', sql);

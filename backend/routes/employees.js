@@ -215,6 +215,15 @@ router.post('/', async (req, res) => {
     const defaultDOB  = date_of_birth || '1990-01-01';
     const defaultHire = hire_date || new Date().toISOString().slice(0, 10);
     const deptIdValue = dept_id ? parseInt(dept_id) : null;
+    
+    const dobDate = new Date(defaultDOB);
+    const hireDateObj = new Date(defaultHire);
+    let calculatedAge = hireDateObj.getFullYear() - dobDate.getFullYear();
+    if (hireDateObj.getMonth() < dobDate.getMonth() || (hireDateObj.getMonth() === dobDate.getMonth() && hireDateObj.getDate() < dobDate.getDate())) { calculatedAge--; }
+    if (calculatedAge < 18) {
+      await conn.rollback(); conn.release();
+      return res.status(400).json({ success: false, message: 'Employee must be at least 18 years old at the time of hiring.' });
+    }
 
     const [empResult] = await conn.query(`
       INSERT INTO Employee (User_ID, Dept_ID, First_Name, Last_Name, Gender, Date_Of_Birth, Job_Title, Phone, Email, Salary, Hire_Date, Is_Active)
@@ -281,6 +290,17 @@ router.put('/:id', async (req, res) => {
 
     const activeFlag = is_active !== undefined ? (is_active ? 1 : 0) : 1;
     const deptIdValue = dept_id ? parseInt(dept_id) : null;
+    
+    const dobStr = date_of_birth || '1990-01-01';
+    const hireStr = hire_date || new Date().toISOString().slice(0, 10);
+    const dobDate = new Date(dobStr);
+    const hireDateObj = new Date(hireStr);
+    let calculatedAge = hireDateObj.getFullYear() - dobDate.getFullYear();
+    if (hireDateObj.getMonth() < dobDate.getMonth() || (hireDateObj.getMonth() === dobDate.getMonth() && hireDateObj.getDate() < dobDate.getDate())) { calculatedAge--; }
+    if (calculatedAge < 18) {
+      await conn.rollback(); conn.release();
+      return res.status(400).json({ success: false, message: 'Employee must be at least 18 years old at the time of hiring.' });
+    }
 
     // Update Employee record
     await conn.query(`

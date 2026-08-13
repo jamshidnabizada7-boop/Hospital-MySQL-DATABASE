@@ -53,6 +53,8 @@ router.post('/medicines', authenticate, canWriteMeds, async (req, res) => {
   const { category_id, medicine_name, generic_name, manufacturer, dosage_form, strength, unit_price, requires_rx } = req.body;
   if (!medicine_name || !strength || !category_id)
     return res.status(400).json({ success:false, message:'medicine_name, strength, category_id required' });
+  if (!/^[0-9]+(\.[0-9]+)?(\/[0-9]+(\.[0-9]+)?)?[a-zA-Z%]+$/.test(strength))
+    return res.status(400).json({ success:false, message:'Strength format is invalid. Must be a number followed by a unit (e.g., 500mg, 0.1%).' });
   try {
     const [result] = await db.query(`
       INSERT INTO Medicine(Category_ID,Medicine_Name,Generic_Name,Manufacturer,Dosage_Form,Strength,Unit_Price,Requires_Rx)
@@ -65,6 +67,8 @@ router.post('/medicines', authenticate, canWriteMeds, async (req, res) => {
 router.put('/medicines/:id', authenticate, canWriteMeds, async (req, res) => {
   const { category_id, medicine_name, generic_name, manufacturer, dosage_form, strength, unit_price, requires_rx, is_active } = req.body;
   try {
+    if (strength && !/^[0-9]+(\.[0-9]+)?(\/[0-9]+(\.[0-9]+)?)?[a-zA-Z%]+$/.test(strength))
+      return res.status(400).json({ success:false, message:'Strength format is invalid. Must be a number followed by a unit (e.g., 500mg, 0.1%).' });
     await db.query(`
       UPDATE Medicine SET Category_ID=?,Medicine_Name=?,Generic_Name=?,Manufacturer=?,
         Dosage_Form=?,Strength=?,Unit_Price=?,Requires_Rx=?,Is_Active=? WHERE Medicine_ID=?`,
@@ -93,6 +97,7 @@ router.get('/locations', authenticate, canReadMeds, async (req, res) => {
 router.post('/locations', authenticate, canWriteMeds, async (req, res) => {
   const { pharmacy_name, location, phone } = req.body;
   if (!pharmacy_name) return res.status(400).json({ success:false, message:'pharmacy_name required' });
+  if (!location || !location.trim()) return res.status(400).json({ success:false, message:'Location cannot be empty' });
   try {
     const [result] = await db.query(
       'INSERT INTO Pharmacy(Pharmacy_Name,Location,Phone) VALUES(?,?,?)',
@@ -104,6 +109,8 @@ router.post('/locations', authenticate, canWriteMeds, async (req, res) => {
 router.put('/locations/:id', authenticate, canWriteMeds, async (req, res) => {
   const { pharmacy_name, location, phone, is_active } = req.body;
   try {
+    if (location !== undefined && !location.trim())
+      return res.status(400).json({ success:false, message:'Location cannot be empty' });
     await db.query('UPDATE Pharmacy SET Pharmacy_Name=?,Location=?,Phone=?,Is_Active=? WHERE Pharmacy_ID=?',
       [pharmacy_name, location||'', phone||null, is_active!==undefined?is_active:1, req.params.id]);
     res.json({ success:true, message:'Pharmacy updated' });
@@ -147,6 +154,10 @@ router.post('/inventory', authenticate, canWriteMeds, async (req, res) => {
   if (!pharmacy_id||!medicine_id||!expiry_date)
     return res.status(400).json({ success:false, message:'pharmacy_id, medicine_id, expiry_date required' });
   try {
+    const [[med]] = await db.query('SELECT Unit_Price FROM Medicine WHERE Medicine_ID=?', [medicine_id]);
+    if (med && parseFloat(unit_cost || 0) > parseFloat(med.Unit_Price)) {
+      return res.status(400).json({ success:false, message:'Unit cost cannot exceed medicine unit price' });
+    }
     const [result] = await db.query(`
       INSERT INTO Inventory(Pharmacy_ID,Medicine_ID,Quantity_In_Stock,Reorder_Level,Batch_Number,Expiry_Date,Unit_Cost)
       VALUES(?,?,?,?,?,?,?)`,

@@ -111,9 +111,22 @@ router.post('/', authenticate, adminOr(ROLES.RECEPTIONIST), async (req, res) => 
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-    const [[slot]] = await conn.query('SELECT Status FROM Appointment_Slot WHERE Slot_ID=? FOR UPDATE', [slot_id]);
+    const [[slot]] = await conn.query('SELECT Status, Schedule_ID FROM Appointment_Slot WHERE Slot_ID=? FOR UPDATE', [slot_id]);
     if (!slot)              { await conn.rollback(); conn.release(); return res.status(404).json({ success:false, message:'Slot not found' }); }
     if (slot.Status!=='Open'){ await conn.rollback(); conn.release(); return res.status(409).json({ success:false, message:'Slot is not available' }); }
+    
+    const [[dup]] = await conn.query(`
+      SELECT COUNT(*) as count FROM Appointment a
+      JOIN Appointment_Slot sl ON a.Slot_ID=sl.Slot_ID
+      JOIN Doctor_Schedule ds ON sl.Schedule_ID=ds.Schedule_ID
+      WHERE a.Patient_ID=? AND a.Appointment_Status != 'Cancelled'
+        AND ds.Work_Date = (SELECT Work_Date FROM Doctor_Schedule WHERE Schedule_ID=?)
+        AND ds.Doctor_ID = (SELECT Doctor_ID FROM Doctor_Schedule WHERE Schedule_ID=?)
+    `, [patient_id, slot.Schedule_ID, slot.Schedule_ID]);
+    if (dup && dup.count > 0) {
+      await conn.rollback(); conn.release(); return res.status(400).json({ success:false, message:'Patient already has an appointment with this doctor on this date.' });
+    }
+
     const [result] = await conn.query(
       'INSERT INTO Appointment(Patient_ID,Slot_ID,Reason) VALUES(?,?,?)',
       [patient_id, slot_id, reason||'']);

@@ -178,8 +178,11 @@
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <input class="form-control" id="doctors-search" placeholder="🔍 Search doctors…" style="width:200px">
-        <select class="form-control" id="doctors-dept-filter" style="width:180px" onchange="Doctors.load(1)">
+        <select class="form-control" id="doctors-dept-filter" style="width:150px" onchange="Doctors.load(1)">
           <option value="">All Departments</option>
+        </select>
+        <select class="form-control" id="doctors-spec-filter" style="width:150px" onchange="Doctors.load(1)">
+          <option value="">All Specializations</option>
         </select>
         <button class="btn btn-primary" id="btn-add-doctor"    onclick="Doctors.openAdd()">+ Add Doctor</button>
         <button class="btn btn-outline" id="btn-add-schedule"  onclick="Doctors.openAddSchedule()"><i data-lucide="plus" width="16" height="16"></i> Add Schedule</button>
@@ -1151,6 +1154,13 @@
         });
       });
     });
+
+    // Enforce max and min date restrictions
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[name="date_of_birth"]').forEach(el => el.setAttribute('max', today));
+    const apptDate = document.getElementById('appt-date');
+    if (apptDate) apptDate.setAttribute('min', today);
+    document.querySelectorAll('input[name="work_date"]').forEach(el => el.setAttribute('min', today));
   });
 </script>
 </body>

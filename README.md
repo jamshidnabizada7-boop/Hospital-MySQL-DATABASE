@@ -1,94 +1,74 @@
-# 🏥 Hospital Management System
+# 🏥 Hospital Management System (HMS)
 
-A complete, production-grade **Hospital Information System (HIS)** — full-stack application with MySQL 8.0 database, Node.js/Express REST API, and a responsive web frontend.
+A complete, production-grade **Hospital Information System (HIS)** — featuring a fully normalized MySQL 8.0 database architecture, a high-performance Node.js/Express REST API, and a dynamic, responsive Single Page Application (SPA) frontend.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & Installation
 
 ### Prerequisites
-- **MySQL 8.0** installed and running
-- **Node.js 18+** (tested on v24)
+- **MySQL 8.0** installed and running on default port `3306`
+- **Node.js** (v18 or higher recommended)
 
-### 1. Clone / Open the project
-```
-cd "Hospital MYSQL Databse"
-```
+### 1. Database Setup
+The database script includes the complete schema, views, stored procedures, triggers, and sample data.
 
-### 2. Install backend dependencies
+1. Double-click the included `run_mysql.bat` script on Windows. 
+   *(Alternatively, open MySQL Workbench and execute `Hospital_Management_System.sql` directly).*
+2. The `Hospital_Management_System` database will be created and populated automatically.
+
+### 2. Backend Server Initialization
+Navigate to the `backend` directory, install dependencies, and start the API server:
 ```bash
 cd backend
 npm install
+npm start
 ```
+*The server will launch on `http://localhost:5000`.*
 
-### 3. Configure database connection
-Edit `backend/.env`:
-```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_mysql_password_here
-DB_NAME=Hospital_Management_System
-JWT_SECRET=change_this_to_a_random_string
-JWT_EXPIRES_IN=8h
-PORT=5000
-```
-
-### 4. Import the database
-Open **MySQL Workbench** → File → Run SQL Script → select `Hospital_Management_System.sql`
-
-Or use the setup wizard:
-```bash
-cd ..
-node setup.js
-```
-
-### 5. Start the server
-```bash
-cd backend
-node server.js
-```
-
-### 6. Open the app
+### 3. Application Access
+Open your web browser and navigate to:
 ```
 http://localhost:5000
 ```
 
 ---
 
-## 🔑 Demo Login Accounts
+## 🔑 System Authentication (Role-Based Access)
+
+The system enforces strict Role-Based Access Control (RBAC). Passwords are cryptographically hashed using `bcrypt`. For testing and demonstration, use the following pre-configured accounts:
 
 | Username | Role | Password |
 |----------|------|----------|
-| `admin` | Hospital Admin | `admin123` |
+| `admin` | System Administrator | `admin123` |
+| `dr_kamal` | Doctor (Cardiology) | `admin123` |
+| `dr_layla` | Doctor (Neurology) | `admin123` |
 | `receptionist1` | Receptionist | `admin123` |
-| `dr_kamal` | Doctor | `admin123` |
-| `dr_layla` | Doctor | `admin123` |
 | `labtech1` | Lab Technician | `admin123` |
 | `pharmacist1` | Pharmacist | `admin123` |
 | `accountant1` | Accountant | `admin123` |
 
-> 🔒 **Security Note:** All sample accounts have their passwords securely hashed in the database. The password for the built-in demo accounts is strictly **`admin123`**. Newly created staff and doctor accounts can be assigned custom passwords securely from the admin dashboard.
-
 ---
 
-## ✨ Key System Features
+## ✨ Architectural Highlights & Features
 
-**Advanced Database Architecture:**
-- **Dynamic Slot Management:** Appointments are efficiently managed with unique capacity constraints, allowing for intelligent slot release upon appointment cancellation.
-- **Manual Dispensing Workflow:** Inventory management enforces strict manual dispensing workflows rather than automatic deductions, ensuring pharmaceutical accuracy.
-- **Flexible Doctor Scheduling:** The scheduling schema natively supports complex, split-shift configurations for doctors across multiple departments on the same day.
-- **Multi-Vendor Supply Chain:** The medicine database schema supports stocking identical generic medicines from multiple suppliers to prevent vendor lock-in.
+### 🗄️ Robust Database Architecture (MySQL 8.0)
+- **3NF Normalization:** 19 highly optimized tables, strictly adhering to Third Normal Form to eliminate data redundancy.
+- **Data Integrity & Constraints:** 
+  - Advanced `CHECK` constraints prevent logical errors (e.g., future Dates of Birth, invalid medication strengths, underage employees).
+  - Pharmaceutical integrity enforcement prevents negative inventory balances and enforces unit-cost vs retail-price validation.
+- **Programmability:** Features **11 Stored Procedures**, **4 User-Defined Functions**, and **8 Triggers** to handle complex, transactional business logic (e.g., double-booking prevention, automated billing triggers) directly at the database layer.
+- **Reporting & Views:** **7 distinct SQL Views** power the frontend analytics dashboards, aggregating patient demographics, clinical activity, and financial revenue.
 
-**Security & Frontend Excellence:**
-- **Strict Role-Based Access Control (RBAC):** UI and API endpoints securely enforce role permissions. Only authorized roles (e.g., Hospital Admin) can manage staff, while Pharmacy buttons and Appointment booking UI are strictly isolated to their respective roles.
-- **Secure Password Hashing:** All employee and doctor credentials are encrypted using `bcrypt` during account creation and management.
-- **Optimized Network Performance:** All live-search inputs (Patients, Doctors, Laboratory, Pharmacy) implement a 350ms `debounce` mechanism to optimize database query loads and prevent server spam.
-- **Graceful Error Handling:** The application frontend features robust `try...catch` mechanisms and custom toast notifications to gracefully handle network failures or backend disconnects.
-- **Modern UI/UX:** The dashboard features a completely responsive design integrated with the `Lucide` scalable vector icon library for a premium, clean aesthetic.
+### 💻 High-Performance Backend (Node.js & Express)
+- **RESTful API:** Clean, structured REST architecture supporting all CRUD operations across clinical and operational modules.
+- **Stateless Authentication:** Secure JWT (JSON Web Token) authentication layer ensuring stateless, scalable session management.
+- **Server-Side Validation:** Double-layer validation architecture catches schema violations before database insertion, guaranteeing application stability.
 
-**University Documentation:**
-- **Comprehensive Project Report:** A massive 8,700-word University Project Report (`Hospital_Management_System_Report.docx` and `project_report.md`) is included, fully documenting the 3NF database schema, architecture, access control, and transaction locking mechanisms for academic submission.
+### 🌐 Dynamic User Interface (Vanilla JS)
+- **Single Page Application:** Lightweight, lightning-fast DOM manipulation without heavyweight frameworks.
+- **Responsive Dashboard:** Fully adaptive grid layout using modern CSS variables and scalable vector icons (Lucide).
+- **Intelligent Search:** Frontend debouncing algorithms optimize real-time search queries for patients, doctors, and medicines, reducing server load.
 
 ---
 
@@ -96,163 +76,32 @@ http://localhost:5000
 
 ```
 Hospital MYSQL Databse/
-├── Hospital_Management_System.sql   # Complete MySQL 8.0 database
-├── setup.js                         # Interactive setup wizard
-├── package.json
-├── README.md
-├── project_report.md                # Comprehensive University Report (Markdown)
-├── Hospital_Management_System_Report.docx # Comprehensive University Report (Word format)
+├── Hospital_Management_System.sql   # Core Database Schema & Logic
+├── run_mysql.bat                    # One-click Windows Database Importer
+├── README.md                        # Project Documentation
+├── project_report.md                # Academic Submission Report
+├── Hospital_Management_System_Report.docx # Formatted Submission Report
+├── Hospital_System_Demo.pptx        # Interactive Scenario Walkthrough Presentation
 │
-├── backend/                         # Node.js + Express API
-│   ├── server.js                    # Main server entry point
-│   ├── db.js                        # MySQL connection pool
-│   ├── .env                         # Environment config (not in git)
-│   ├── middleware/
-│   │   └── auth.js                  # JWT authentication middleware
-│   └── routes/
-│       ├── auth.js                  # Login / session
-│       ├── dashboard.js             # Stats & charts data
-│       ├── patients.js              # Patient CRUD
-│       ├── doctors.js               # Doctor CRUD + schedules
-│       ├── appointments.js          # Book / complete / cancel
-│       ├── billing.js               # Bills & payments
-│       ├── pharmacy.js              # Medicines & inventory
-│       ├── laboratory.js            # Lab orders & results
-│       ├── medical.js               # Medical records & prescriptions
-│       └── reports.js               # Analytics & reports
+├── backend/                         # Node.js Server Environment
+│   ├── server.js                    # Core application entry
+│   ├── db.js                        # MySQL connection pooling
+│   └── routes/                      # API routing modules (auth, patients, billing, etc.)
 │
-└── frontend/                        # Vanilla HTML/CSS/JS SPA
-    ├── index.html                   # Single-page application
-    ├── css/
-    │   └── style.css                # Complete responsive stylesheet
-    └── js/
-        ├── api.js                   # HTTP client
-        ├── utils.js                 # Helpers (Toast, Fmt, Modal…)
-        ├── auth.js                  # Login / logout
-        ├── app.js                   # Navigation shell
-        ├── dashboard.js             # Dashboard charts & stats
-        ├── patients.js              # Patient management
-        ├── doctors.js               # Doctor management
-        ├── appointments.js          # Appointment booking
-        ├── billing.js               # Billing & payments
-        ├── pharmacy.js              # Pharmacy & inventory
-        ├── laboratory.js            # Lab orders & results
-        └── reports.js               # Reports & analytics
+└── frontend/                        # Web Application Interface
+    ├── index.html                   # Master UI shell
+    ├── css/style.css                # Global stylesheet
+    └── js/                          # Application logic modules
 ```
 
 ---
 
-## 🗄️ Database Design
+## 🏫 Academic Context
 
-**Name:** `Hospital_Management_System` | **Engine:** InnoDB | **Normal Form:** 3NF
-
-| Module | Tables |
-|--------|--------|
-| Security | `Role`, `App_User` |
-| Hospital | `Department`, `Specialization`, `Doctor`, `Employee` |
-| Patient | `Patient` |
-| Scheduling | `Doctor_Schedule`, `Appointment_Slot`, `Appointment` |
-| Medical | `Medical_Record`, `Prescription`, `Prescription_Item` |
-| Pharmacy | `Medicine_Category`, `Medicine`, `Pharmacy`, `Inventory` |
-| Laboratory | `Lab_Test`, `Lab_Order`, `Lab_Result` |
-| Billing | `Bill`, `Payment` |
-| Audit | `Audit_Log` |
-
-### Database Features
-- ✅ **19 tables** fully normalized to 3NF
-- ✅ **25+ indexes** on frequently searched columns
-- ✅ **7 views** (Upcoming_Appointments, Doctor_Daily_Schedule, Patient_Medical_History, Outstanding_Bills, Available_Doctors, Medicine_Inventory, Lab_Test_Results)
-- ✅ **11 stored procedures** (RegisterPatient, BookAppointment, CancelAppointment, CompleteAppointment, GenerateBill, AddMedicine, UpdateMedicineStock, CreatePrescription, OrderLabTest, RecordLabResult, ProcessPayment)
-- ✅ **4 functions** (CalculateAge, CalculateBillTotal, DoctorAvailable, PatientAppointmentCount)
-- ✅ **8 triggers** (double-booking prevention, expired medicine guard, auto inventory deduction, auto medical record, audit logging)
-- ✅ **44 sample queries** covering all SQL constructs
-- ✅ **ACID transactions** for all critical operations
-- ✅ **Role-based MySQL users** (6 users with least-privilege grants)
-
-### Sample Data
-- 10 Departments, 10 Doctors, 25 Patients, 15 Employees
-- 50 Appointments, 50 Slots, 20 Medicines, 20 Inventory records
-- 20 Bills, 20 Payments, 20 Prescriptions, 20 Lab Orders, 20 Lab Results
-
----
-
-## 🌐 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/login` | Authenticate user |
-| GET | `/api/auth/me` | Get current user |
-| GET | `/api/dashboard/stats` | Dashboard statistics |
-| GET/POST/PUT/DELETE | `/api/patients` | Patient CRUD |
-| GET | `/api/patients/:id/history` | Medical history |
-| GET/POST/PUT | `/api/doctors` | Doctor CRUD |
-| GET/POST | `/api/doctors/:id/schedule` | Doctor schedules |
-| GET/POST | `/api/appointments` | Appointments |
-| PUT | `/api/appointments/:id/cancel` | Cancel appointment |
-| PUT | `/api/appointments/:id/complete` | Complete + create record |
-| GET | `/api/appointments/slots/available` | Available slots |
-| GET/POST | `/api/billing` | Bills |
-| POST | `/api/billing/generate` | Generate bill |
-| POST | `/api/billing/:id/payment` | Process payment |
-| GET/POST | `/api/pharmacy/medicines` | Medicine catalog |
-| GET | `/api/pharmacy/inventory` | Inventory |
-| PUT | `/api/pharmacy/inventory/:id/stock` | Update stock |
-| GET/POST | `/api/lab/orders` | Lab orders |
-| POST | `/api/lab/orders/:id/results` | Record result |
-| GET | `/api/lab/tests` | Test catalog |
-| GET | `/api/reports/revenue` | Revenue report |
-| GET | `/api/reports/appointments` | Appointment report |
-| GET | `/api/reports/inventory` | Inventory report |
-
----
-
-## 📐 Entity Relationship Summary
-
-```
-Role (1)────(M) App_User
-Department (1)────(M) Doctor
-Department (1)────(M) Employee
-Specialization (1)────(M) Doctor
-Doctor (1)────(M) Doctor_Schedule
-Doctor_Schedule (1)────(M) Appointment_Slot
-Appointment_Slot (1)────(0..1) Appointment
-Patient (1)────(M) Appointment
-Appointment (1)────(0..1) Medical_Record
-Medical_Record (1)────(M) Prescription
-Prescription (1)────(M) Prescription_Item
-Medicine (1)────(M) Prescription_Item
-Medicine_Category (1)────(M) Medicine
-Pharmacy (1)────(M) Inventory
-Medicine (1)────(M) Inventory
-Appointment (1)────(M) Lab_Order
-Doctor (1)────(M) Lab_Order
-Lab_Order (1)────(M) Lab_Result
-Lab_Test (1)────(M) Lab_Result
-Appointment (1)────(1) Bill
-Bill (1)────(M) Payment
-```
-
----
-
-## 🔐 Business Rules Enforced
-
-- A patient cannot book two appointments in the same slot (trigger guard)
-- Medical records created only after completed appointments (trigger)
-- Bills generated only for completed appointments (SP validation)
-- Expired medicines cannot be prescribed (trigger)
-- Payments auto-update bill status (trigger)
-- All critical changes logged to Audit_Log (triggers)
-
----
-
-## 🏫 Project Info
-
-- **Course:** Database Systems
-- **Level:** University / Advanced
-- **Stack:** MySQL 8.0 + Node.js + Express + Vanilla JS
+- **Domain:** Database Systems Design & Implementation
+- **Focus:** Relational Database Theory, Transaction Management, Stored Procedures & Triggers, Full-Stack Integration.
 
 ---
 
 ## 📄 License
-
-MIT — Free to use and modify for educational purposes.
+Released for academic and educational evaluation.
