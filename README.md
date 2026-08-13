@@ -10,18 +10,23 @@ A complete, production-grade **Hospital Information System (HIS)** — featuring
 - **MySQL 8.0** installed and running on default port `3306`
 - **Node.js** (v18 or higher recommended)
 
-### 1. Database Setup
-The database script includes the complete schema, views, stored procedures, triggers, and sample data.
-
-1. Double-click the included `run_mysql.bat` script on Windows. 
-   *(Alternatively, open MySQL Workbench and execute `Hospital_Management_System.sql` directly).*
-2. The `Hospital_Management_System` database will be created and populated automatically.
-
-### 2. Backend Server Initialization
-Navigate to the `backend` directory, install dependencies, and start the API server:
+### 1. Backend Server Setup
+Navigate to the `backend` directory and install dependencies:
 ```bash
 cd backend
 npm install
+```
+
+### 2. Database Initialization
+Use the built-in interactive setup wizard to configure your MySQL connection details. This wizard will automatically generate your `.env` configuration file and import the database.
+```bash
+npm run setup
+```
+*Note: If auto-import fails, double-click the `run_mysql.bat` script on Windows or import `Hospital_Management_System.sql` directly via MySQL Workbench.*
+
+### 3. Application Access
+Start the API server:
+```bash
 npm start
 ```
 *The server will launch on `http://localhost:5000`.*
