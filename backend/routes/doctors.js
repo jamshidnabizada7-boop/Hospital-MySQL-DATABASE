@@ -81,6 +81,18 @@ router.post('/', authenticate, adminOr(), async (req, res) => {
     return res.status(400).json({ success:false, message:'Required: first_name, last_name, dept_id, spec_id, license_number, phone, email' });
   if (date_of_birth && new Date(date_of_birth) > new Date())
     return res.status(400).json({ success:false, message:'Date of Birth cannot be in the future' });
+  if (date_of_birth) {
+    const dob = new Date(date_of_birth);
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    const m = now.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) {
+        age--;
+    }
+    if (age < 18) {
+        return res.status(400).json({ success:false, message:'Doctor must be at least 18 years old.' });
+    }
+  }
   
   const conn = await db.getConnection();
   try {
@@ -152,6 +164,18 @@ router.put('/:id', authenticate, adminOr(ROLES.DOCTOR), async (req, res) => {
           phone, email, is_active } = req.body;
   if (date_of_birth && new Date(date_of_birth) > new Date())
     return res.status(400).json({ success:false, message:'Date of Birth cannot be in the future' });
+  if (date_of_birth) {
+    const dob = new Date(date_of_birth);
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    const m = now.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) {
+        age--;
+    }
+    if (age < 18) {
+        return res.status(400).json({ success:false, message:'Doctor must be at least 18 years old.' });
+    }
+  }
 
   // Doctor cannot change dept/spec/license/active status
   const isDoctor = req.user.role === ROLES.DOCTOR;

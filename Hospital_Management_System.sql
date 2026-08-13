@@ -1828,13 +1828,16 @@ BEGIN
     END IF;
 END$$
 
--- Trigger: Validate Doctor DOB
+-- Trigger: Validate Doctor DOB and Age 18+
 CREATE TRIGGER trg_validate_doctor_dob_insert
 BEFORE INSERT ON Doctor
 FOR EACH ROW
 BEGIN
     IF NEW.Date_Of_Birth > CURRENT_DATE THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of Birth cannot be in the future.';
+    END IF;
+    IF TIMESTAMPDIFF(YEAR, NEW.Date_Of_Birth, NEW.Joined_Date) < 18 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Doctor must be at least 18 years old at the time of joining.';
     END IF;
 END$$
 
@@ -1844,6 +1847,9 @@ FOR EACH ROW
 BEGIN
     IF NEW.Date_Of_Birth > CURRENT_DATE THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of Birth cannot be in the future.';
+    END IF;
+    IF TIMESTAMPDIFF(YEAR, NEW.Date_Of_Birth, NEW.Joined_Date) < 18 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Doctor must be at least 18 years old at the time of joining.';
     END IF;
 END$$
 
